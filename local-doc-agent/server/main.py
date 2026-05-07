@@ -23,6 +23,7 @@ if __package__ in {None, ""}:
         save_base64_image_tool,
         write_text_file_tool,
     )
+    from server.tools_templates import create_markdown_from_template_tool, list_templates_tool
 else:
     from .config import ensure_base_directories, settings
     from .tools_files import (
@@ -40,6 +41,7 @@ else:
         save_base64_image_tool,
         write_text_file_tool,
     )
+    from .tools_templates import create_markdown_from_template_tool, list_templates_tool
 
 
 mcp = FastMCP(
@@ -79,6 +81,12 @@ def list_assets(
 
 
 @mcp.tool()
+def list_templates() -> dict:
+    """List built-in document templates."""
+    return list_templates_tool()
+
+
+@mcp.tool()
 def read_text_file(path: str, max_chars: int | None = None) -> dict:
     """Read a UTF-8 text file inside the workspace root."""
     return read_text_file_tool(path=path, max_chars=max_chars)
@@ -115,6 +123,28 @@ def create_markdown(
         title=title,
         summary=summary,
         sections=sections,
+        overwrite=overwrite,
+        create_backup=create_backup,
+    )
+
+
+@mcp.tool()
+def create_markdown_from_template(
+    template_name: str,
+    output_path: str,
+    title: str,
+    summary: str = "",
+    variables: dict | None = None,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict:
+    """Create a Markdown document from a built-in template."""
+    return create_markdown_from_template_tool(
+        template_name=template_name,
+        output_path=output_path,
+        title=title,
+        summary=summary,
+        variables=variables,
         overwrite=overwrite,
         create_backup=create_backup,
     )

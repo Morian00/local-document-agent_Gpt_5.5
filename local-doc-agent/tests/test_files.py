@@ -19,11 +19,15 @@ def _reload_modules(monkeypatch, tmp_path):
     import server.logging_utils as logging_utils
     import server.tools_assets as tools_assets
     import server.tools_files as tools_files
+    import server.tools_templates as tools_templates
 
     importlib.reload(config)
     importlib.reload(logging_utils)
     importlib.reload(tools_assets)
     importlib.reload(tools_files)
+    importlib.reload(tools_templates)
+    tools_files.list_templates_tool = tools_templates.list_templates_tool
+    tools_files.create_markdown_from_template_tool = tools_templates.create_markdown_from_template_tool
     return tools_files, config.settings
 
 
@@ -355,3 +359,67 @@ def test_insert_image_to_pptx_rejects_bad_slide_index(monkeypatch, tmp_path):
 
     assert result["ok"] is False
     assert "slide_index" in result["error"]
+
+
+def test_list_templates(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    result = tools.list_templates_tool()
+
+    assert result["ok"] is True
+    names = {template["name"] for template in result["templates"]}
+    assert {"planning_doc", "proposal_doc", "checklist_doc"}.issubset(names)
+
+
+def test_create_markdown_from_template(monkeypatch, tmp_path):
+    tools, settings = _reload_modules(monkeypatch, tmp_path)
+
+    created = tools.create_markdown_from_template_tool(
+        template_name="planning_doc",
+        output_path="docs/template-plan.md",
+        title="전투 시스템 기획서",
+        summary="전투 루프와 성장 구조를 정리한다.",
+    )
+
+    assert created["ok"] is True
+    assert created["path"] == "docs/template-plan.md"
+    assert created["template_name"] == "planning_doc"
+    assert created["section_count"] > 0
+
+    content = (settings.workspace_root / "docs" / "template-plan.md").read_text(encoding="utf-8")
+    assert "# 전투 시스템 기획서" in content
+    assert "## 핵심 루프" in content
+    assert "전투 루프와 성장 구조를 정리한다." in content
+
+
+def test_create_markdown_from_template_creates_backup(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    first = tools.create_markdown_from_template_tool(
+        template_name="checklist_doc",
+        output_path="docs/checklist.md",
+        title="첫 체크리스트",
+    )
+    second = tools.create_markdown_from_template_tool(
+        template_name="checklist_doc",
+        output_path="docs/checklist.md",
+        title="두 번째 체크리스트",
+    )
+
+    assert first["ok"] is True
+    assert second["ok"] is True
+    assert second["created"] is False
+    assert second["backup_path"] is not None
+
+
+def test_create_markdown_from_template_rejects_unknown_template(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    result = tools.create_markdown_from_template_tool(
+        template_name="unknown",
+        output_path="docs/unknown.md",
+        title="Unknown",
+    )
+
+    assert result["ok"] is False
+    assert "template_name" in result["error"]

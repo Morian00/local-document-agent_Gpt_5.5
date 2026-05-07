@@ -22,15 +22,19 @@
 - Markdown 이미지 링크 삽입
 - PPTX 이미지 삽입
 - 이미지 도구 모듈 분리
+- 템플릿 목록 조회
+- 템플릿 기반 Markdown 생성
 
 ## 노출 도구
 
 - `ping`
 - `list_files`
 - `list_assets`
+- `list_templates`
 - `read_text_file`
 - `write_text_file`
 - `create_markdown`
+- `create_markdown_from_template`
 - `export_docx_from_markdown`
 - `create_xlsx_from_sheets`
 - `create_pptx_from_spec`
@@ -41,21 +45,23 @@
 
 ## 검증 상태
 
-- 로컬 테스트: `uv run pytest` 기준 19개 통과
+- 로컬 테스트: `uv run pytest` 기준 23개 통과
 - 로컬 MCP 클라이언트 기준 전체 도구 노출 확인
 - ngrok HTTPS 경유 MCP 호출 확인
 - ChatGPT UI 기준 0~1단계 및 DOCX 변환 호출 확인
+- 로컬 MCP 클라이언트 기준 템플릿 도구 호출 확인
 
 ## 남은 확인
 
 - ChatGPT UI 기준 `create_xlsx_from_sheets` 최종 호출 확인
 - ChatGPT UI 기준 `create_pptx_from_spec` 최종 호출 확인
 - ChatGPT UI 기준 이미지 도구 4종 최종 호출 확인
+- ChatGPT UI 기준 템플릿 도구 2종 최종 호출 확인
 - 쓰기 도구 반복 호출 시 권한 확인 모달 발생 패턴 기록
 
 ## MVP 이후 후보
 
-- 템플릿 기반 Markdown, DOCX, PPTX 생성
+- 템플릿 기반 DOCX, PPTX 생성
 - PPTX 레이아웃 품질 고도화
 - DOCX 스타일 고도화
 - XLSX 서식 옵션 확대

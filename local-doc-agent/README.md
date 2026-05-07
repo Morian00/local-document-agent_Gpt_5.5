@@ -33,7 +33,7 @@ ChatGPT 개발자 모드 커스텀 커넥터가 HTTPS 터널의 `/mcp` 엔드포
 `create_pptx_from_spec`는 제목, 부제, 슬라이드 목록을 받아 PPTX 초안을 신규 생성한다.
 출력 파일은 workspace 내부 경로만 허용하며, 기존 PPTX 파일을 덮어쓸 경우 백업을 생성한다.
 
-이미지, 템플릿 기능은 DOCX, XLSX, PPTX 생성이 ChatGPT 개발자 모드에서 실제 동작하는 것을 확인한 뒤 추가한다.
+이미지와 템플릿 기능은 DOCX, XLSX, PPTX 생성이 ChatGPT 개발자 모드에서 실제 동작하는 것을 확인한 뒤 추가한다.
 
 ## 3단계 이미지 도구
 
@@ -51,6 +51,20 @@ ChatGPT 개발자 모드 커스텀 커넥터가 HTTPS 터널의 `/mcp` 엔드포
 
 이미지 도구 구현은 `server/tools_assets.py`로 분리되어 있다.
 기존 MCP 노출 이름은 유지한다.
+
+## 4단계 템플릿 도구
+
+- `list_templates`
+- `create_markdown_from_template`
+
+`list_templates`는 내장 템플릿 목록을 조회한다.
+`create_markdown_from_template`은 템플릿 이름, 제목, 요약, 변수 값을 받아 Markdown 문서 초안을 생성한다.
+
+현재 내장 템플릿:
+
+- `planning_doc`
+- `proposal_doc`
+- `checklist_doc`
 
 ## 실행 준비
 
@@ -90,7 +104,7 @@ uv run pytest
 현재 확인 결과:
 
 ```text
-19 passed
+23 passed
 ```
 
 테스트 범위:
@@ -109,6 +123,8 @@ uv run pytest
 - assets 이미지 목록 조회
 - Markdown 이미지 링크 삽입
 - PPTX 이미지 삽입
+- 템플릿 목록 조회
+- 템플릿 기반 Markdown 생성
 
 ## HTTPS 터널
 
@@ -137,7 +153,8 @@ https://example.ngrok-free.app/mcp
 9. `create_pptx_from_spec` 실제 호출 가능 여부 확인
 10. `list_assets`, `save_base64_image`, `insert_image_to_markdown` 실제 호출 가능 여부 확인
 11. `insert_image_to_pptx` 실제 호출 가능 여부 확인
-12. 권한 확인 모달 또는 호출 제한 발생 여부 기록
+12. `list_templates`, `create_markdown_from_template` 실제 호출 가능 여부 확인
+13. 권한 확인 모달 또는 호출 제한 발생 여부 기록
 
 쓰기 도구가 제한될 경우, 1차 대응은 읽기 전용 검증 모드로 전환한다.
 
