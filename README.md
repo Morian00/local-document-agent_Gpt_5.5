@@ -13,18 +13,54 @@
   - `read_text_file`
   - `write_text_file`
   - `patch_text_file`
+- 1단계 Markdown 작성 도구
+  - `create_markdown`
+- 2단계 문서 변환 도구
+  - `export_docx_from_markdown`
+  - `create_xlsx_from_sheets`
+  - `create_pptx_from_spec`
+- 3단계 이미지 도구
+  - `list_assets`
+  - `save_base64_image`
+  - `insert_image_to_markdown`
+  - `insert_image_to_pptx`
 - workspace 밖 경로 차단
 - 기존 파일 자동 백업
 - diff summary 반환
 - JSONL 작업 로그
 - pytest 테스트 코드
+- 이미지 도구 모듈 분리
 
-DOCX, PPTX, XLSX, 이미지, 템플릿 기능은 파일 읽기/쓰기 루프가 ChatGPT 개발자 모드에서 실제로 동작하는 것을 확인한 뒤 추가한다.
+DOCX, PPTX, XLSX, 이미지 기능은 로컬 MCP 클라이언트 기준으로 동작 검증이 완료되었다.
+템플릿 기능은 MVP 이후 단계로 둔다.
+
+## 현재 작업 상태
+
+- 로컬 구현: 0단계 MVP 완료
+- 1단계 구현: Markdown 신규 생성 도구 추가
+- 2단계 구현: Markdown 기반 DOCX 변환 도구 추가
+- 2단계 구현: XLSX 신규 생성 도구 추가
+- 2단계 구현: PPTX 신규 생성 도구 추가
+- 3단계 구현: assets 이미지 저장, 목록 조회, Markdown 삽입 도구 추가
+- 3단계 구현: PPTX 이미지 삽입 도구 추가
+- 유지보수 정리: 이미지 도구를 `server/tools_assets.py`로 분리
+- 로컬 테스트: `uv run pytest` 기준 통과
+- Git 원격 저장소: `origin/main` 연결 완료
+- 다음 확인 대상: ChatGPT UI 기준 XLSX, PPTX, 이미지 도구 최종 호출 확인
+
+아직 확정되지 않은 항목:
+
+- 쓰기 도구 반복 호출 시 권한 확인 모달 또는 제한 발생 패턴
+- ChatGPT UI에서 `create_xlsx_from_sheets` 호출 성공 여부
+- ChatGPT UI에서 `create_pptx_from_spec` 호출 성공 여부
+- ChatGPT UI에서 이미지 도구 호출 성공 여부
+- 템플릿과 슬라이드 품질 고도화 범위
 
 ## 문서
 
 - 계획서: [local-document-agent-plan.md](local-document-agent-plan.md)
 - 구현 프로젝트: [local-doc-agent/README.md](local-doc-agent/README.md)
+- MVP 상태: [local-doc-agent/MVP_STATUS.md](local-doc-agent/MVP_STATUS.md)
 
 ## 실행 요약
 
@@ -50,14 +86,14 @@ GitHub Desktop에서 아래 순서로 올린다.
 
 1. GitHub Desktop 실행
 2. File > Add local repository 선택
-3. 경로 선택: `C:\Users\user\Desktop\Gpt_5.5`
+3. 경로 선택: `C:\Users\home\Desktop\local-document-agent_Gpt_5.5`
 4. 변경 파일 확인
-5. 커밋 메시지 입력: `Initial local document agent MVP`
+5. 커밋 메시지 입력
 6. Commit to main 선택
 7. Publish repository 선택
 
-권장 저장소 이름:
+현재 원격 저장소:
 
 ```text
-local-document-agent
+https://github.com/Morian00/local-document-agent_Gpt_5.5.git
 ```

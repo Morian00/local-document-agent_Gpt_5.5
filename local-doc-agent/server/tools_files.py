@@ -8,6 +8,12 @@ from typing import Any
 
 from .config import ensure_base_directories, settings
 from .logging_utils import write_operation_log
+from .tools_assets import (
+    insert_image_to_markdown_tool,
+    insert_image_to_pptx_tool,
+    list_assets_tool,
+    save_base64_image_tool,
+)
 
 
 TEXT_EXTENSIONS = {".md", ".txt", ".json", ".csv", ".yaml", ".yml"}
@@ -34,6 +40,12 @@ def _ensure_text_extension(path: Path) -> None:
         raise ValueError(f"텍스트 도구는 다음 확장자만 지원함: {allowed}")
 
 
+def _ensure_extension(path: Path, allowed_extensions: set[str], label: str) -> None:
+    if path.suffix.lower() not in allowed_extensions:
+        allowed = ", ".join(sorted(allowed_extensions))
+        raise ValueError(f"{label}은 다음 확장자만 지원함: {allowed}")
+
+
 def _diff_summary(before: str, after: str) -> dict[str, int]:
     before_lines = before.splitlines(keepends=True)
     after_lines = after.splitlines(keepends=True)
@@ -48,6 +60,42 @@ def _diff_summary(before: str, after: str) -> dict[str, int]:
         elif line.startswith("-"):
             removed += 1
     return {"added_lines": added, "removed_lines": removed}
+
+
+def _normalize_markdown_level(value: Any) -> int:
+    try:
+        level = int(value)
+    except (TypeError, ValueError):
+        level = 2
+    return min(max(level, 2), 6)
+
+
+def _build_markdown_content(
+    title: str,
+    summary: str | None = None,
+    sections: list[dict[str, Any]] | None = None,
+) -> str:
+    normalized_title = title.strip()
+    if not normalized_title:
+        raise ValueError("title 값은 비어 있을 수 없음")
+
+    lines = [f"# {normalized_title}", ""]
+
+    if summary is not None and summary.strip():
+        lines.extend([summary.strip(), ""])
+
+    for section in sections or []:
+        heading = str(section.get("heading", "")).strip()
+        body = str(section.get("body", "")).strip()
+        if not heading and not body:
+            continue
+        if heading:
+            level = _normalize_markdown_level(section.get("level", 2))
+            lines.extend([f"{'#' * level} {heading}", ""])
+        if body:
+            lines.extend([body, ""])
+
+    return "\n".join(lines).rstrip() + "\n"
 
 
 def _backup_existing_file(path: Path) -> str | None:
@@ -68,6 +116,322 @@ def _backup_existing_file(path: Path) -> str | None:
 
     shutil.copy2(path, backup_path)
     return _to_workspace_relative(backup_path)
+
+
+def _write_text_file_result(
+    path: str,
+    content: str,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    target = _resolve_workspace_path(path)
+    _ensure_text_extension(target)
+
+    should_overwrite = settings.default_overwrite if overwrite is None else overwrite
+    should_backup = settings.create_backup if create_backup is None else create_backup
+
+    exists = target.exists()
+    if exists and not should_overwrite:
+        raise FileExistsError(f"파일이 이미 존재함: {path}")
+    if exists and not target.is_file():
+        raise ValueError(f"파일이 아님: {path}")
+
+    before = target.read_text(encoding="utf-8") if exists else ""
+    backup_path = _backup_existing_file(target) if exists and should_backup else None
+
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(content, encoding="utf-8", newline="\n")
+
+    return {
+        "ok": True,
+        "path": _to_workspace_relative(target),
+        "created": not exists,
+        "backup_path": backup_path,
+        "diff_summary": _diff_summary(before, content),
+    }
+
+
+def _write_docx_from_markdown_result(
+    source_path: str,
+    output_path: str,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    from docx import Document
+
+    source = _resolve_workspace_path(source_path)
+    output = _resolve_workspace_path(output_path)
+    _ensure_extension(source, {".md"}, "DOCX 변환 입력 파일")
+    _ensure_extension(output, {".docx"}, "DOCX 변환 출력 파일")
+
+    if not source.exists():
+        raise FileNotFoundError(f"파일을 찾을 수 없음: {source_path}")
+    if not source.is_file():
+        raise ValueError(f"파일이 아님: {source_path}")
+
+    should_overwrite = settings.default_overwrite if overwrite is None else overwrite
+    should_backup = settings.create_backup if create_backup is None else create_backup
+
+    exists = output.exists()
+    if exists and not should_overwrite:
+        raise FileExistsError(f"파일이 이미 존재함: {output_path}")
+    if exists and not output.is_file():
+        raise ValueError(f"파일이 아님: {output_path}")
+
+    markdown = source.read_text(encoding="utf-8")
+    document = Document()
+    heading_count = 0
+    paragraph_count = 0
+
+    for raw_line in markdown.splitlines():
+        line = raw_line.rstrip()
+        stripped = line.strip()
+        if not stripped:
+            continue
+
+        if stripped.startswith("#"):
+            marker, _, heading = stripped.partition(" ")
+            if marker and set(marker) == {"#"} and heading.strip():
+                level = min(max(len(marker), 1), 4)
+                document.add_heading(heading.strip(), level=level)
+                heading_count += 1
+                continue
+
+        if stripped.startswith("- "):
+            document.add_paragraph(stripped[2:].strip(), style="List Bullet")
+            paragraph_count += 1
+            continue
+
+        document.add_paragraph(stripped)
+        paragraph_count += 1
+
+    backup_path = _backup_existing_file(output) if exists and should_backup else None
+    output.parent.mkdir(parents=True, exist_ok=True)
+    document.save(output)
+
+    return {
+        "ok": True,
+        "path": _to_workspace_relative(output),
+        "source_path": _to_workspace_relative(source),
+        "output_path": _to_workspace_relative(output),
+        "created": not exists,
+        "backup_path": backup_path,
+        "heading_count": heading_count,
+        "paragraph_count": paragraph_count,
+    }
+
+
+def _normalize_sheet_name(value: Any, fallback: str) -> str:
+    raw = str(value or fallback).strip() or fallback
+    for char in ("\\", "/", "*", "[", "]", ":", "?"):
+        raw = raw.replace(char, " ")
+    return raw[:31].strip() or fallback
+
+
+def _normalize_xlsx_row(row: Any, headers: list[str]) -> list[Any]:
+    if isinstance(row, dict):
+        if headers:
+            return [row.get(header, "") for header in headers]
+        return list(row.values())
+    if isinstance(row, (list, tuple)):
+        return list(row)
+    return [row]
+
+
+def _write_xlsx_from_sheets_result(
+    output_path: str,
+    sheets: list[dict[str, Any]],
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    from openpyxl import Workbook
+    from openpyxl.styles import Font
+
+    if not sheets:
+        raise ValueError("sheets 값은 비어 있을 수 없음")
+
+    output = _resolve_workspace_path(output_path)
+    _ensure_extension(output, {".xlsx"}, "XLSX 출력 파일")
+
+    should_overwrite = settings.default_overwrite if overwrite is None else overwrite
+    should_backup = settings.create_backup if create_backup is None else create_backup
+
+    exists = output.exists()
+    if exists and not should_overwrite:
+        raise FileExistsError(f"파일이 이미 존재함: {output_path}")
+    if exists and not output.is_file():
+        raise ValueError(f"파일이 아님: {output_path}")
+
+    workbook = Workbook()
+    workbook.remove(workbook.active)
+    used_names: set[str] = set()
+    total_rows = 0
+
+    for index, sheet_spec in enumerate(sheets, start=1):
+        base_name = _normalize_sheet_name(sheet_spec.get("name"), f"Sheet{index}")
+        sheet_name = base_name
+        counter = 2
+        while sheet_name in used_names:
+            suffix = f" {counter}"
+            sheet_name = f"{base_name[:31 - len(suffix)]}{suffix}".strip()
+            counter += 1
+        used_names.add(sheet_name)
+
+        worksheet = workbook.create_sheet(title=sheet_name)
+        headers = [str(item) for item in sheet_spec.get("headers", [])]
+        rows = sheet_spec.get("rows", [])
+
+        if headers:
+            worksheet.append(headers)
+            total_rows += 1
+            for cell in worksheet[1]:
+                cell.font = Font(bold=True)
+            worksheet.freeze_panes = "A2"
+
+        for row in rows:
+            worksheet.append(_normalize_xlsx_row(row, headers))
+            total_rows += 1
+
+        for column_cells in worksheet.columns:
+            max_length = max(len(str(cell.value or "")) for cell in column_cells)
+            worksheet.column_dimensions[column_cells[0].column_letter].width = min(max(max_length + 2, 10), 40)
+
+    backup_path = _backup_existing_file(output) if exists and should_backup else None
+    output.parent.mkdir(parents=True, exist_ok=True)
+    workbook.save(output)
+
+    return {
+        "ok": True,
+        "path": _to_workspace_relative(output),
+        "output_path": _to_workspace_relative(output),
+        "created": not exists,
+        "backup_path": backup_path,
+        "sheet_count": len(sheets),
+        "row_count": total_rows,
+    }
+
+
+def _normalize_slide_items(value: Any) -> list[str]:
+    if value is None:
+        return []
+    if isinstance(value, str):
+        return [line.strip() for line in value.splitlines() if line.strip()]
+    if isinstance(value, (list, tuple)):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [str(value).strip()]
+
+
+def _add_textbox(slide: Any, left: Any, top: Any, width: Any, height: Any, text: str, font_size: int) -> None:
+    from pptx.util import Pt
+
+    box = slide.shapes.add_textbox(left, top, width, height)
+    frame = box.text_frame
+    frame.clear()
+    frame.word_wrap = True
+    paragraph = frame.paragraphs[0]
+    paragraph.text = text
+    paragraph.font.size = Pt(font_size)
+
+
+def _write_pptx_from_spec_result(
+    output_path: str,
+    title: str,
+    slides: list[dict[str, Any]],
+    subtitle: str | None = None,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    from pptx import Presentation
+    from pptx.util import Inches, Pt
+
+    normalized_title = title.strip()
+    if not normalized_title:
+        raise ValueError("title 값은 비어 있을 수 없음")
+    if not slides:
+        raise ValueError("slides 값은 비어 있을 수 없음")
+
+    output = _resolve_workspace_path(output_path)
+    _ensure_extension(output, {".pptx"}, "PPTX 출력 파일")
+
+    should_overwrite = settings.default_overwrite if overwrite is None else overwrite
+    should_backup = settings.create_backup if create_backup is None else create_backup
+
+    exists = output.exists()
+    if exists and not should_overwrite:
+        raise FileExistsError(f"파일이 이미 존재함: {output_path}")
+    if exists and not output.is_file():
+        raise ValueError(f"파일이 아님: {output_path}")
+
+    presentation = Presentation()
+
+    title_slide = presentation.slides.add_slide(presentation.slide_layouts[0])
+    title_slide.shapes.title.text = normalized_title
+    if subtitle and title_slide.placeholders:
+        try:
+            title_slide.placeholders[1].text = subtitle.strip()
+        except IndexError:
+            pass
+
+    slide_count = 1
+    bullet_count = 0
+    note_count = 0
+
+    for slide_spec in slides:
+        slide_title = str(slide_spec.get("title", "")).strip()
+        bullets = _normalize_slide_items(slide_spec.get("bullets"))
+        body = str(slide_spec.get("body", "")).strip()
+        notes = str(slide_spec.get("notes", "")).strip()
+
+        if not slide_title and not bullets and not body and not notes:
+            continue
+
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        if slide.shapes.title:
+            slide.shapes.title.text = slide_title or "Untitled"
+
+        content = slide.placeholders[1].text_frame
+        content.clear()
+
+        if body:
+            paragraph = content.paragraphs[0]
+            paragraph.text = body
+            paragraph.font.size = Pt(22)
+
+        for index, bullet in enumerate(bullets):
+            paragraph = content.paragraphs[0] if index == 0 and not body else content.add_paragraph()
+            paragraph.text = bullet
+            paragraph.level = 0
+            paragraph.font.size = Pt(22)
+            bullet_count += 1
+
+        if notes:
+            _add_textbox(
+                slide,
+                Inches(0.8),
+                Inches(6.5),
+                Inches(11.7),
+                Inches(0.7),
+                f"Note: {notes}",
+                10,
+            )
+            note_count += 1
+
+        slide_count += 1
+
+    backup_path = _backup_existing_file(output) if exists and should_backup else None
+    output.parent.mkdir(parents=True, exist_ok=True)
+    presentation.save(output)
+
+    return {
+        "ok": True,
+        "path": _to_workspace_relative(output),
+        "output_path": _to_workspace_relative(output),
+        "created": not exists,
+        "backup_path": backup_path,
+        "slide_count": slide_count,
+        "bullet_count": bullet_count,
+        "note_count": note_count,
+    }
 
 
 def _safe_result(tool_name: str, action: Any) -> dict[str, Any]:
@@ -154,33 +518,91 @@ def write_text_file_tool(
     create_backup: bool | None = None,
 ) -> dict[str, Any]:
     def action() -> dict[str, Any]:
-        target = _resolve_workspace_path(path)
-        _ensure_text_extension(target)
-
-        should_overwrite = settings.default_overwrite if overwrite is None else overwrite
-        should_backup = settings.create_backup if create_backup is None else create_backup
-
-        exists = target.exists()
-        if exists and not should_overwrite:
-            raise FileExistsError(f"파일이 이미 존재함: {path}")
-        if exists and not target.is_file():
-            raise ValueError(f"파일이 아님: {path}")
-
-        before = target.read_text(encoding="utf-8") if exists else ""
-        backup_path = _backup_existing_file(target) if exists and should_backup else None
-
-        target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(content, encoding="utf-8", newline="\n")
-
-        return {
-            "ok": True,
-            "path": _to_workspace_relative(target),
-            "created": not exists,
-            "backup_path": backup_path,
-            "diff_summary": _diff_summary(before, content),
-        }
+        return _write_text_file_result(
+            path=path,
+            content=content,
+            overwrite=overwrite,
+            create_backup=create_backup,
+        )
 
     return _safe_result("write_text_file", action)
+
+
+def create_markdown_tool(
+    path: str,
+    title: str,
+    summary: str | None = None,
+    sections: list[dict[str, Any]] | None = None,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        content = _build_markdown_content(title=title, summary=summary, sections=sections)
+        result = _write_text_file_result(
+            path=path,
+            content=content,
+            overwrite=overwrite,
+            create_backup=create_backup,
+        )
+        result["tool"] = "create_markdown"
+        return result
+
+    return _safe_result("create_markdown", action)
+
+
+def export_docx_from_markdown_tool(
+    source_path: str,
+    output_path: str,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        return _write_docx_from_markdown_result(
+            source_path=source_path,
+            output_path=output_path,
+            overwrite=overwrite,
+            create_backup=create_backup,
+        )
+
+    return _safe_result("export_docx_from_markdown", action)
+
+
+def create_xlsx_from_sheets_tool(
+    output_path: str,
+    sheets: list[dict[str, Any]],
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        return _write_xlsx_from_sheets_result(
+            output_path=output_path,
+            sheets=sheets,
+            overwrite=overwrite,
+            create_backup=create_backup,
+        )
+
+    return _safe_result("create_xlsx_from_sheets", action)
+
+
+def create_pptx_from_spec_tool(
+    output_path: str,
+    title: str,
+    slides: list[dict[str, Any]],
+    subtitle: str | None = None,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        return _write_pptx_from_spec_result(
+            output_path=output_path,
+            title=title,
+            slides=slides,
+            subtitle=subtitle,
+            overwrite=overwrite,
+            create_backup=create_backup,
+        )
+
+    return _safe_result("create_pptx_from_spec", action)
 
 
 def patch_text_file_tool(

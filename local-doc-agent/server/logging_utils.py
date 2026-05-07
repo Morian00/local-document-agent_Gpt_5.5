@@ -14,6 +14,8 @@ def write_operation_log(tool_name: str, result: dict[str, Any]) -> None:
         "tool": tool_name,
         "ok": result.get("ok", False),
         "path": result.get("path"),
+        "source_path": result.get("source_path"),
+        "output_path": result.get("output_path"),
         "backup_path": result.get("backup_path"),
         "created": result.get("created"),
         "changed_count": result.get("changed_count"),

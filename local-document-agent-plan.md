@@ -798,6 +798,70 @@ MVP에서 제외하는 항목:
 개발 단계별로 ChatGPT 커넥터에 노출하는 도구 수를 제한한다.
 각 단계에서 도구 호출이 안정화되면 다음 단계 도구를 추가한다.
 
+### 11.0.1 현재 구현 상태
+
+2026-05-07 기준 현재 상태:
+
+- Git 저장소 초기화 완료
+- 원격 저장소 `origin/main` 연결 완료
+- FastMCP 기반 `/mcp` 서버 구현 완료
+- 초기 노출 도구 5종 구현 완료
+  - `ping`
+  - `list_files`
+  - `read_text_file`
+  - `write_text_file`
+  - `patch_text_file`
+- 1단계 Markdown 도구 구현 완료
+  - `create_markdown`
+- workspace 외부 경로 차단 구현 완료
+- 텍스트 확장자 제한 구현 완료
+- 기존 파일 자동 백업 구현 완료
+- diff summary 반환 구현 완료
+- JSONL 작업 로그 구현 완료
+- pytest 기준 로컬 테스트 통과
+- ngrok HTTPS 터널 연결 완료
+- ChatGPT 개발자 모드 커스텀 커넥터 등록 완료
+- ChatGPT UI 기준 `ping` 호출 성공
+- ChatGPT UI 기준 `list_files` 호출 성공
+- ChatGPT UI 기준 `write_text_file` 호출 성공
+- ChatGPT UI 기준 `patch_text_file` 호출 성공
+- ChatGPT UI 기준 `create_markdown` 호출 성공
+- ChatGPT UI 호출로 테스트 Markdown 파일 생성 및 수정 완료
+- ChatGPT UI 호출로 구조화 Markdown 문서 생성 완료
+- 기존 파일 수정 시 자동 백업 생성 확인 완료
+- 작업 로그 및 오류 반환 기록 확인 완료
+- 2단계 첫 기능 `export_docx_from_markdown` 구현 완료
+- 로컬 MCP 클라이언트 기준 `export_docx_from_markdown` 도구 노출 확인 완료
+- ChatGPT UI 기준 `export_docx_from_markdown` 호출 성공
+- 2단계 기능 `create_xlsx_from_sheets` 구현 완료
+- 로컬 MCP 클라이언트 기준 `create_xlsx_from_sheets` 도구 노출 및 호출 성공
+- 2단계 기능 `create_pptx_from_spec` 구현 완료
+- 로컬 MCP 클라이언트 기준 `create_pptx_from_spec` 도구 노출 및 호출 성공
+- 3단계 기능 `list_assets`, `save_base64_image`, `insert_image_to_markdown` 구현 완료
+- 로컬 MCP 클라이언트 기준 이미지 도구 3종 노출 및 호출 성공
+- 3단계 기능 `insert_image_to_pptx` 구현 완료
+- 로컬 MCP 클라이언트 기준 `insert_image_to_pptx` 도구 노출 및 호출 성공
+- 유지보수 정리: 이미지 도구 구현을 `server/tools_assets.py`로 분리 완료
+
+미확정 항목:
+
+- 쓰기 도구 반복 호출 시 권한 확인 모달 또는 제한 발생 패턴
+- `create_markdown` 호출 시 섹션 목록이 누락되지 않도록 프롬프트 예시 보강 필요
+- ChatGPT UI 기준 `create_xlsx_from_sheets` 호출 성공 여부
+- ChatGPT UI 기준 `create_pptx_from_spec` 호출 성공 여부
+- PPTX 템플릿, 폰트, 이미지 배치 품질 기준
+- ChatGPT UI 기준 이미지 도구 4종 호출 성공 여부
+
+다음 우선 작업:
+
+1. ChatGPT UI에서 `create_xlsx_from_sheets` 호출 확인
+2. ChatGPT UI에서 `create_pptx_from_spec` 호출 확인
+3. ChatGPT UI에서 이미지 도구 4종 호출 확인
+4. 권한 제한 여부 기록
+5. `create_markdown` 사용 예시 보강
+6. DOCX/XLSX/PPTX 품질 기준 보강
+7. PPTX 이미지 삽입 또는 템플릿 기능 착수 여부 결정
+
 ### 11.0 구현 시작 전 체크리스트
 
 코드 구현을 시작하기 전에 아래 항목을 확인한다.
@@ -836,6 +900,13 @@ MVP에서 제외하는 항목:
 - ChatGPT가 기존 테스트 Markdown 파일을 수정 가능
 - 쓰기 도구가 막히는 경우, 읽기 전용 모드로 임시 전환 가능한지 판단
 
+현재 판정:
+
+- `ping`, `list_files`, `write_text_file`, `patch_text_file`, `create_markdown` 완료
+- 자동 백업 생성 완료
+- 작업 로그 기록 완료
+- 0~1단계 MVP 완료 처리 가능
+
 ### 11.2 1단계: Markdown 파일 작업 MVP
 
 목표:
@@ -852,6 +923,14 @@ MVP에서 제외하는 항목:
 - write_text_file
 - patch_text_file
 - create_markdown
+
+현재 구현 상태:
+
+- `create_markdown` 구현 완료
+- 제목, 요약, 섹션 목록 기반 Markdown 생성 가능
+- 저장, 덮어쓰기, 백업, diff summary 반환은 기존 텍스트 파일 도구 규칙 재사용
+- 로컬 pytest 기준 통과
+- ChatGPT UI 기준 호출 성공
 
 ### 11.3 2단계: 문서 변환 MVP
 
@@ -873,6 +952,22 @@ MVP에서 제외하는 항목:
 - extract_docx_text
 - convert_docx_to_markdown
 
+현재 구현 상태:
+
+- `export_docx_from_markdown` 구현 완료
+- Markdown 제목, 본문, bullet 목록을 DOCX 기본 스타일로 변환
+- 출력 경로 workspace 내부 제한
+- 기존 DOCX 덮어쓰기 시 백업 가능
+- `create_xlsx_from_sheets` 구현 완료
+- 시트 목록, 헤더, 행 데이터 기반 XLSX 신규 생성 가능
+- 기존 XLSX 덮어쓰기 시 백업 가능
+- `create_pptx_from_spec` 구현 완료
+- 제목, 부제, 슬라이드 제목, 본문, 불릿, 노트 기반 PPTX 신규 생성 가능
+- 기존 PPTX 덮어쓰기 시 백업 가능
+- 로컬 pytest 기준 통과
+- DOCX ChatGPT UI 호출 성공
+- XLSX/PPTX ChatGPT UI 호출 검증 대기
+
 ### 11.4 3단계: 이미지 저장 및 삽입
 
 목표:
@@ -890,6 +985,26 @@ MVP에서 제외하는 항목:
 - PPTX 생성 시 이미지 경로 지원
 
 이미지 단계의 1차 목표는 ChatGPT 생성 이미지를 자동으로 저장하는 것이 아니라, workspace/assets에 존재하는 이미지를 문서 생성 과정에서 안정적으로 참조하는 것이다.
+
+현재 구현 상태:
+
+- `list_assets` 구현 완료
+- `save_base64_image` 구현 완료
+- `insert_image_to_markdown` 구현 완료
+- `insert_image_to_pptx` 구현 완료
+- base64 이미지 저장, assets 목록 조회, Markdown 이미지 링크 삽입 가능
+- 기존 PPTX 지정 슬라이드에 이미지 삽입 가능
+- 기존 Markdown 수정 시 백업 가능
+- 기존 PPTX 수정 시 백업 가능
+- 로컬 pytest 기준 통과
+- 로컬 MCP 클라이언트 기준 호출 성공
+- ChatGPT UI 호출 검증 대기
+
+구조 정리:
+
+- 이미지 도구 구현은 `server/tools_assets.py`에 배치
+- 기존 MCP 등록 및 외부 도구명은 유지
+- `server/tools_files.py`는 기존 도구 import 호환성을 유지
 
 ### 11.5 4단계: 템플릿과 작업 흐름 고도화
 
