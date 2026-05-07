@@ -846,6 +846,7 @@ MVP에서 제외하는 항목:
 - 로컬 MCP 클라이언트 기준 템플릿 도구 4종 노출 및 호출 성공
 - 4단계 기능 `create_docx_from_template` 구현 완료
 - 로컬 MCP 클라이언트 기준 템플릿 DOCX 생성 호출 성공
+- DOCX 기본 스타일 프로필 적용 완료
 - 4단계 기능 `create_pptx_from_template` 구현 완료
 - 로컬 MCP 클라이언트 기준 템플릿 PPTX 생성 호출 성공
 - 로컬 MCP 클라이언트 배치 스모크 검증 스크립트 추가 완료
@@ -965,7 +966,7 @@ MVP에서 제외하는 항목:
 현재 구현 상태:
 
 - `export_docx_from_markdown` 구현 완료
-- Markdown 제목, 본문, bullet 목록을 DOCX 기본 스타일로 변환
+- Markdown 제목, 본문, bullet 목록을 DOCX 기본 스타일 프로필로 변환
 - 출력 경로 workspace 내부 제한
 - 기존 DOCX 덮어쓰기 시 백업 가능
 - `create_xlsx_from_sheets` 구현 완료

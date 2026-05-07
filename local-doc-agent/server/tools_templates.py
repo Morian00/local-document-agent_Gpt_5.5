@@ -8,6 +8,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import ensure_base_directories, settings
+from .docx_style import apply_docx_style
 from .logging_utils import write_operation_log
 
 
@@ -422,6 +423,7 @@ def create_docx_from_template_tool(
             variables=variables or {},
         )
         document = Document()
+        style_profile = apply_docx_style(document)
         counts = _add_markdown_to_docx(document, markdown)
 
         backup_path = _backup_existing_file(target) if exists and should_backup else None
@@ -436,6 +438,7 @@ def create_docx_from_template_tool(
             "backup_path": backup_path,
             "template_name": template_name,
             "section_count": len(template["sections"]),
+            "style_profile": style_profile,
             **counts,
         }
 

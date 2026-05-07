@@ -15,6 +15,7 @@
 - JSONL 작업 로그
 - Markdown 구조화 문서 생성
 - Markdown 기반 DOCX 생성
+- DOCX 기본 스타일 프로필 적용
 - 시트 목록 기반 XLSX 생성
 - 슬라이드 spec 기반 PPTX 생성
 - assets 이미지 목록 조회
@@ -56,6 +57,7 @@
 - ChatGPT UI 기준 0~1단계 및 DOCX 변환 호출 확인
 - 로컬 MCP 클라이언트 기준 템플릿 도구 호출 확인
 - 로컬 MCP 클라이언트 기준 템플릿 DOCX 생성 확인
+- Markdown 변환 DOCX와 템플릿 DOCX 스타일 프로필 적용 확인
 - ChatGPT UI 모델 제약 확인: GPT Pro 모델에서는 MCP 미노출 가능, Thinking 모드에서 호출 필요
 
 ## 남은 확인
@@ -68,7 +70,6 @@
 ## MVP 이후 후보
 
 - PPTX 레이아웃 품질 고도화
-- DOCX 스타일 고도화
 - XLSX 서식 옵션 확대
 - 기존 DOCX 텍스트 추출
 - 기존 DOCX to Markdown 변환

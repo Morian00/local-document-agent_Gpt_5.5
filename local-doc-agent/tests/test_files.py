@@ -119,12 +119,16 @@ def test_export_docx_from_markdown(monkeypatch, tmp_path):
     assert exported["output_path"] == "output/source.docx"
     assert exported["heading_count"] == 2
     assert exported["paragraph_count"] == 3
+    assert exported["style_profile"] == "default_korean_docx_v1"
 
     document = Document(settings.workspace_root / "output" / "source.docx")
     texts = [paragraph.text for paragraph in document.paragraphs]
     assert "Proposal" in texts
     assert "Intro paragraph." in texts
     assert "Markdown input" in texts
+    assert document.styles["Normal"].font.name == "Malgun Gothic"
+    assert document.styles["Normal"].font.size.pt == 10.5
+    assert round(document.sections[0].left_margin.inches, 2) == 0.85
 
 
 def test_export_docx_rejects_non_markdown_source(monkeypatch, tmp_path):
@@ -443,12 +447,14 @@ def test_create_docx_from_template(monkeypatch, tmp_path):
     assert created["template_name"] == "proposal_doc"
     assert created["heading_count"] > 0
     assert created["paragraph_count"] > 0
+    assert created["style_profile"] == "default_korean_docx_v1"
 
     document = Document(settings.workspace_root / "output" / "proposal.docx")
     texts = [paragraph.text for paragraph in document.paragraphs]
     assert "문서 자동화 제안서" in texts
     assert "제안 배경" in texts
     assert "로컬 문서 작업 자동화를 제안한다." in texts
+    assert document.styles["Heading 1"].font.name == "Malgun Gothic"
 
 
 def test_create_docx_from_template_creates_backup(monkeypatch, tmp_path):

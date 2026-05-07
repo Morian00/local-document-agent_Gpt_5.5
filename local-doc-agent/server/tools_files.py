@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from .config import ensure_base_directories, settings
+from .docx_style import apply_docx_style
 from .logging_utils import write_operation_log
 from .tools_assets import (
     insert_image_to_markdown_tool,
@@ -180,6 +181,7 @@ def _write_docx_from_markdown_result(
 
     markdown = source.read_text(encoding="utf-8")
     document = Document()
+    style_profile = apply_docx_style(document)
     heading_count = 0
     paragraph_count = 0
 
@@ -218,6 +220,7 @@ def _write_docx_from_markdown_result(
         "backup_path": backup_path,
         "heading_count": heading_count,
         "paragraph_count": paragraph_count,
+        "style_profile": style_profile,
     }
 
 

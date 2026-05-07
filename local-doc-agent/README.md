@@ -26,6 +26,7 @@ ChatGPT 개발자 모드 커스텀 커넥터가 HTTPS 터널의 `/mcp` 엔드포
 
 `export_docx_from_markdown`은 workspace 내부 Markdown 파일을 읽어 DOCX 파일로 저장한다.
 출력 파일은 workspace 내부 경로만 허용하며, 기존 DOCX 파일을 덮어쓸 경우 백업을 생성한다.
+DOCX 출력에는 기본 한글 문서 스타일 프로필을 적용한다.
 
 `create_xlsx_from_sheets`는 시트 목록, 헤더, 행 데이터를 받아 XLSX 파일을 신규 생성한다.
 출력 파일은 workspace 내부 경로만 허용하며, 기존 XLSX 파일을 덮어쓸 경우 백업을 생성한다.
@@ -121,6 +122,7 @@ uv run pytest
 - 기존 파일 자동 백업
 - 확장자 필터 기반 파일 목록 조회
 - Markdown 기반 DOCX 생성
+- DOCX 기본 스타일 프로필 적용
 - 시트 목록 기반 XLSX 생성
 - 슬라이드 spec 기반 PPTX 생성
 - base64 이미지 저장
@@ -174,9 +176,9 @@ https://example.ngrok-free.app/mcp
 
 1. 배치 스모크 검증 스크립트 유지
 2. ChatGPT UI 모드별 MCP 도구 노출 제약 기록
-3. DOCX 스타일 고도화 검토
-4. PPTX 레이아웃 품질 고도화 검토
-5. 기존 문서 읽기·추출 도구 검토
+3. PPTX 레이아웃 품질 고도화 검토
+4. 기존 DOCX 텍스트 추출 도구 검토
+5. 기존 DOCX to Markdown 변환 검토
 
 쓰기 도구가 제한될 경우, 1차 대응은 읽기 전용 검증 모드로 전환한다.
 
