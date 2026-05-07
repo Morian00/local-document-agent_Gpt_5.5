@@ -10,6 +10,7 @@ from typing import Any
 from .config import ensure_base_directories, settings
 from .docx_style import apply_docx_style
 from .logging_utils import write_operation_log
+from .pptx_style import apply_pptx_style, style_content_slide, style_paragraph, style_title_slide
 
 
 TEMPLATES: dict[str, dict[str, Any]] = {
@@ -242,8 +243,6 @@ def _write_template_pptx_result(
     create_backup: bool | None = None,
 ) -> dict[str, Any]:
     from pptx import Presentation
-    from pptx.util import Pt
-
     rendered_title, slides = _build_template_slides(
         template=template,
         title=title,
@@ -267,12 +266,14 @@ def _write_template_pptx_result(
         raise ValueError(f"파일이 아님: {output_path}")
 
     presentation = Presentation()
+    style_profile = apply_pptx_style(presentation)
     title_slide = presentation.slides.add_slide(presentation.slide_layouts[0])
     title_slide.shapes.title.text = rendered_title
     try:
         title_slide.placeholders[1].text = summary.strip()
     except IndexError:
         pass
+    style_title_slide(title_slide)
 
     bullet_count = 0
     body_count = 0
@@ -281,6 +282,7 @@ def _write_template_pptx_result(
         slide = presentation.slides.add_slide(presentation.slide_layouts[1])
         if slide.shapes.title:
             slide.shapes.title.text = slide_spec["title"]
+        style_content_slide(slide)
 
         content = slide.placeholders[1].text_frame
         content.clear()
@@ -290,14 +292,14 @@ def _write_template_pptx_result(
         if body:
             paragraph = content.paragraphs[0]
             paragraph.text = body
-            paragraph.font.size = Pt(22)
+            style_paragraph(paragraph, size_pt=20)
             body_count += 1
 
         for index, bullet in enumerate(bullets):
             paragraph = content.paragraphs[0] if index == 0 and not body else content.add_paragraph()
             paragraph.text = bullet
             paragraph.level = 0
-            paragraph.font.size = Pt(22)
+            style_paragraph(paragraph, size_pt=20)
             bullet_count += 1
 
     backup_path = _backup_existing_file(target) if exists and should_backup else None
@@ -315,6 +317,7 @@ def _write_template_pptx_result(
         "slide_count": len(presentation.slides),
         "bullet_count": bullet_count,
         "body_count": body_count,
+        "style_profile": style_profile,
     }
 
 

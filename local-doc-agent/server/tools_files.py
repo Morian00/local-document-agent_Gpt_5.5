@@ -9,6 +9,7 @@ from typing import Any
 from .config import ensure_base_directories, settings
 from .docx_style import apply_docx_style
 from .logging_utils import write_operation_log
+from .pptx_style import apply_pptx_style, style_content_slide, style_paragraph, style_title_slide
 from .tools_assets import (
     insert_image_to_markdown_tool,
     insert_image_to_pptx_tool,
@@ -325,15 +326,13 @@ def _normalize_slide_items(value: Any) -> list[str]:
 
 
 def _add_textbox(slide: Any, left: Any, top: Any, width: Any, height: Any, text: str, font_size: int) -> None:
-    from pptx.util import Pt
-
     box = slide.shapes.add_textbox(left, top, width, height)
     frame = box.text_frame
     frame.clear()
     frame.word_wrap = True
     paragraph = frame.paragraphs[0]
     paragraph.text = text
-    paragraph.font.size = Pt(font_size)
+    style_paragraph(paragraph, size_pt=font_size)
 
 
 def _write_pptx_from_spec_result(
@@ -345,7 +344,7 @@ def _write_pptx_from_spec_result(
     create_backup: bool | None = None,
 ) -> dict[str, Any]:
     from pptx import Presentation
-    from pptx.util import Inches, Pt
+    from pptx.util import Inches
 
     normalized_title = title.strip()
     if not normalized_title:
@@ -366,6 +365,7 @@ def _write_pptx_from_spec_result(
         raise ValueError(f"파일이 아님: {output_path}")
 
     presentation = Presentation()
+    style_profile = apply_pptx_style(presentation)
 
     title_slide = presentation.slides.add_slide(presentation.slide_layouts[0])
     title_slide.shapes.title.text = normalized_title
@@ -374,6 +374,7 @@ def _write_pptx_from_spec_result(
             title_slide.placeholders[1].text = subtitle.strip()
         except IndexError:
             pass
+    style_title_slide(title_slide)
 
     slide_count = 1
     bullet_count = 0
@@ -391,6 +392,7 @@ def _write_pptx_from_spec_result(
         slide = presentation.slides.add_slide(presentation.slide_layouts[1])
         if slide.shapes.title:
             slide.shapes.title.text = slide_title or "Untitled"
+        style_content_slide(slide)
 
         content = slide.placeholders[1].text_frame
         content.clear()
@@ -398,13 +400,13 @@ def _write_pptx_from_spec_result(
         if body:
             paragraph = content.paragraphs[0]
             paragraph.text = body
-            paragraph.font.size = Pt(22)
+            style_paragraph(paragraph, size_pt=20)
 
         for index, bullet in enumerate(bullets):
             paragraph = content.paragraphs[0] if index == 0 and not body else content.add_paragraph()
             paragraph.text = bullet
             paragraph.level = 0
-            paragraph.font.size = Pt(22)
+            style_paragraph(paragraph, size_pt=20)
             bullet_count += 1
 
         if notes:
@@ -434,6 +436,7 @@ def _write_pptx_from_spec_result(
         "slide_count": slide_count,
         "bullet_count": bullet_count,
         "note_count": note_count,
+        "style_profile": style_profile,
     }
 
 

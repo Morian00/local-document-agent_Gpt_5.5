@@ -33,6 +33,7 @@ DOCX 출력에는 기본 한글 문서 스타일 프로필을 적용한다.
 
 `create_pptx_from_spec`는 제목, 부제, 슬라이드 목록을 받아 PPTX 초안을 신규 생성한다.
 출력 파일은 workspace 내부 경로만 허용하며, 기존 PPTX 파일을 덮어쓸 경우 백업을 생성한다.
+PPTX 출력에는 기본 한글 발표자료 스타일 프로필을 적용한다.
 
 DOCX, XLSX, PPTX 생성은 로컬 MCP 클라이언트와 ChatGPT UI 기준으로 기본 호출 검증이 완료되었다.
 
@@ -125,6 +126,7 @@ uv run pytest
 - DOCX 기본 스타일 프로필 적용
 - 시트 목록 기반 XLSX 생성
 - 슬라이드 spec 기반 PPTX 생성
+- PPTX 기본 스타일 프로필 적용
 - base64 이미지 저장
 - assets 이미지 목록 조회
 - Markdown 이미지 링크 삽입
@@ -176,9 +178,9 @@ https://example.ngrok-free.app/mcp
 
 1. 배치 스모크 검증 스크립트 유지
 2. ChatGPT UI 모드별 MCP 도구 노출 제약 기록
-3. PPTX 레이아웃 품질 고도화 검토
-4. 기존 DOCX 텍스트 추출 도구 검토
-5. 기존 DOCX to Markdown 변환 검토
+3. 기존 DOCX 텍스트 추출 도구 검토
+4. 기존 DOCX to Markdown 변환 검토
+5. XLSX 서식 옵션 확대 검토
 
 쓰기 도구가 제한될 경우, 1차 대응은 읽기 전용 검증 모드로 전환한다.
 

@@ -162,6 +162,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - DOCX 출력에 기본 스타일 프로필 적용 가능
 - `create_xlsx_from_sheets` 호출로 XLSX 생성 가능
 - `create_pptx_from_spec` 호출로 PPTX 생성 가능
+- PPTX 출력에 기본 스타일 프로필 적용 가능
 - `save_base64_image` 호출로 이미지 저장 가능
 - `list_assets` 호출로 이미지 목록 조회 가능
 - `insert_image_to_markdown` 호출로 Markdown 이미지 링크 삽입 가능
@@ -171,6 +172,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - `create_docx_from_template` 호출로 템플릿 기반 DOCX 생성 가능
 - 템플릿 기반 DOCX 출력에 기본 스타일 프로필 적용 가능
 - `create_pptx_from_template` 호출로 템플릿 기반 PPTX 생성 가능
+- 템플릿 기반 PPTX 출력에 기본 스타일 프로필 적용 가능
 - 오류 발생 시 오류 메시지가 ChatGPT 응답에 반환됨
 
 현재 완료 항목:

@@ -849,6 +849,7 @@ MVP에서 제외하는 항목:
 - DOCX 기본 스타일 프로필 적용 완료
 - 4단계 기능 `create_pptx_from_template` 구현 완료
 - 로컬 MCP 클라이언트 기준 템플릿 PPTX 생성 호출 성공
+- PPTX 기본 스타일 프로필 적용 완료
 - 로컬 MCP 클라이언트 배치 스모크 검증 스크립트 추가 완료
 - ChatGPT UI 제약 확인: GPT Pro 모델에서는 MCP 도구 미노출 가능, Thinking 모드에서 호출 필요
 
@@ -974,6 +975,7 @@ MVP에서 제외하는 항목:
 - 기존 XLSX 덮어쓰기 시 백업 가능
 - `create_pptx_from_spec` 구현 완료
 - 제목, 부제, 슬라이드 제목, 본문, 불릿, 노트 기반 PPTX 신규 생성 가능
+- PPTX 와이드 화면 비율, 제목, 본문, 불릿 기본 스타일 프로필 적용 가능
 - 기존 PPTX 덮어쓰기 시 백업 가능
 - 로컬 pytest 기준 통과
 - DOCX ChatGPT UI 호출 성공

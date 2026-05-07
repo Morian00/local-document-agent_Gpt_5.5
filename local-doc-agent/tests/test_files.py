@@ -231,10 +231,14 @@ def test_create_pptx_from_spec(monkeypatch, tmp_path):
     assert created["slide_count"] == 3
     assert created["bullet_count"] == 2
     assert created["note_count"] == 1
+    assert created["style_profile"] == "default_korean_pptx_v1"
 
     presentation = Presentation(settings.workspace_root / "output" / "deck.pptx")
     assert len(presentation.slides) == 3
+    assert round(presentation.slide_width.inches, 2) == 13.33
+    assert round(presentation.slide_height.inches, 2) == 7.5
     assert presentation.slides[0].shapes.title.text == "MVP Review"
+    assert presentation.slides[0].shapes.title.text_frame.paragraphs[0].font.name == "Malgun Gothic"
     slide_text = "\n".join(shape.text for shape in presentation.slides[1].shapes if hasattr(shape, "text"))
     assert "Validate MCP calls" in slide_text
 
@@ -507,8 +511,10 @@ def test_create_pptx_from_template(monkeypatch, tmp_path):
     assert created["slide_count"] == 7
     assert created["bullet_count"] > 0
     assert created["body_count"] > 0
+    assert created["style_profile"] == "default_korean_pptx_v1"
 
     presentation = Presentation(settings.workspace_root / "output" / "planning.pptx")
+    assert round(presentation.slide_width.inches, 2) == 13.33
     slide_texts = []
     for slide in presentation.slides:
         for shape in slide.shapes:
