@@ -10,6 +10,7 @@ from .config import ensure_base_directories, settings
 from .docx_style import apply_docx_style
 from .logging_utils import write_operation_log
 from .pptx_style import apply_pptx_style, style_content_slide, style_paragraph, style_title_slide
+from .text_guard import reject_suspicious_question_marks
 from .tools_assets import (
     insert_image_to_markdown_tool,
     insert_image_to_pptx_tool,
@@ -77,6 +78,10 @@ def _build_markdown_content(
     summary: str | None = None,
     sections: list[dict[str, Any]] | None = None,
 ) -> str:
+    reject_suspicious_question_marks(title, label="title")
+    reject_suspicious_question_marks(summary, label="summary")
+    reject_suspicious_question_marks(sections, label="sections")
+
     normalized_title = title.strip()
     if not normalized_title:
         raise ValueError("title 값은 비어 있을 수 없음")
@@ -126,6 +131,7 @@ def _write_text_file_result(
     overwrite: bool | None = None,
     create_backup: bool | None = None,
 ) -> dict[str, Any]:
+    reject_suspicious_question_marks(content, label="content")
     target = _resolve_workspace_path(path)
     _ensure_text_extension(target)
 
@@ -294,6 +300,8 @@ def _write_xlsx_from_sheets_result(
     from openpyxl import Workbook
     from openpyxl.styles import Font
 
+    reject_suspicious_question_marks(sheets, label="sheets")
+
     if not sheets:
         raise ValueError("sheets 값은 비어 있을 수 없음")
 
@@ -388,6 +396,10 @@ def _write_pptx_from_spec_result(
 ) -> dict[str, Any]:
     from pptx import Presentation
     from pptx.util import Inches
+
+    reject_suspicious_question_marks(title, label="title")
+    reject_suspicious_question_marks(subtitle, label="subtitle")
+    reject_suspicious_question_marks(slides, label="slides")
 
     normalized_title = title.strip()
     if not normalized_title:
@@ -690,6 +702,7 @@ def patch_text_file_tool(
             find = str(replacement.get("find", ""))
             replace = str(replacement.get("replace", ""))
             must_match_once = bool(replacement.get("must_match_once", False))
+            reject_suspicious_question_marks(replace, label="replacements.replace")
 
             if find == "":
                 raise ValueError("find 값은 비어 있을 수 없음")

@@ -11,6 +11,7 @@ from .config import ensure_base_directories, settings
 from .docx_style import apply_docx_style
 from .logging_utils import write_operation_log
 from .pptx_style import apply_pptx_style, style_content_slide, style_paragraph, style_title_slide
+from .text_guard import reject_suspicious_question_marks
 
 
 TEMPLATES: dict[str, dict[str, Any]] = {
@@ -129,6 +130,10 @@ def _build_template_markdown(
     summary: str,
     variables: dict[str, Any],
 ) -> str:
+    reject_suspicious_question_marks(title, label="title")
+    reject_suspicious_question_marks(summary, label="summary")
+    reject_suspicious_question_marks(variables, label="variables")
+
     merged_variables = {"title": title, "summary": summary, **variables}
     rendered_title = _render_template_text(str(template["title"]), merged_variables).strip()
     if not rendered_title:
@@ -208,6 +213,10 @@ def _build_template_slides(
     summary: str,
     variables: dict[str, Any],
 ) -> tuple[str, list[dict[str, Any]]]:
+    reject_suspicious_question_marks(title, label="title")
+    reject_suspicious_question_marks(summary, label="summary")
+    reject_suspicious_question_marks(variables, label="variables")
+
     merged_variables = {"title": title, "summary": summary, **variables}
     rendered_title = _render_template_text(str(template["title"]), merged_variables).strip()
     if not rendered_title:

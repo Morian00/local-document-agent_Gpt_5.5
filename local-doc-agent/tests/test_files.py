@@ -99,6 +99,19 @@ def test_create_markdown_rejects_empty_title(monkeypatch, tmp_path):
     assert "title" in created["error"]
 
 
+def test_create_markdown_rejects_suspicious_question_marks(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    created = tools.create_markdown_tool(
+        "docs/broken.md",
+        title="??? ?? ???",
+        summary="깨진 입력",
+    )
+
+    assert created["ok"] is False
+    assert "인코딩 손상" in created["error"]
+
+
 def test_export_docx_from_markdown(monkeypatch, tmp_path):
     tools, settings = _reload_modules(monkeypatch, tmp_path)
 
@@ -263,6 +276,23 @@ def test_create_xlsx_rejects_empty_sheets(monkeypatch, tmp_path):
     assert "sheets" in result["error"]
 
 
+def test_create_xlsx_rejects_suspicious_question_marks(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    result = tools.create_xlsx_from_sheets_tool(
+        output_path="output/broken.xlsx",
+        sheets=[
+            {
+                "name": "Checklist",
+                "rows": [["MCP ??", "Planner", "Done"]],
+            }
+        ],
+    )
+
+    assert result["ok"] is False
+    assert "인코딩 손상" in result["error"]
+
+
 def test_create_pptx_from_spec(monkeypatch, tmp_path):
     tools, settings = _reload_modules(monkeypatch, tmp_path)
 
@@ -328,6 +358,19 @@ def test_create_pptx_rejects_empty_slides(monkeypatch, tmp_path):
 
     assert result["ok"] is False
     assert "slides" in result["error"]
+
+
+def test_create_pptx_rejects_suspicious_question_marks(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    result = tools.create_pptx_from_spec_tool(
+        output_path="output/broken.pptx",
+        title="??? DOCX ???",
+        slides=[{"title": "Slide", "body": "Body"}],
+    )
+
+    assert result["ok"] is False
+    assert "인코딩 손상" in result["error"]
 
 
 def test_save_base64_image_and_list_assets(monkeypatch, tmp_path):
@@ -550,6 +593,19 @@ def test_create_docx_from_template_rejects_bad_extension(monkeypatch, tmp_path):
 
     assert result["ok"] is False
     assert ".docx" in result["error"]
+
+
+def test_create_docx_from_template_rejects_suspicious_question_marks(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    result = tools.create_docx_from_template_tool(
+        template_name="proposal_doc",
+        output_path="output/broken.docx",
+        title="??? DOCX ???",
+    )
+
+    assert result["ok"] is False
+    assert "인코딩 손상" in result["error"]
 
 
 def test_create_pptx_from_template(monkeypatch, tmp_path):

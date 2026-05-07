@@ -11,7 +11,7 @@
 - 로컬 MCP 엔드포인트: `http://127.0.0.1:2091/mcp`
 - MCP 클라이언트 기준 도구 목록 조회 성공
 - `ping` 호출 성공
-- 로컬 pytest 기준 통과: 32개 테스트
+- 로컬 pytest 기준 통과: 36개 테스트
 - 배치 스모크 검증 스크립트 기준 주요 도구 18개 일괄 호출 성공
 
 ## 현재 ChatGPT UI 검증 상태
@@ -161,6 +161,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - workspace 내부 Markdown 파일 생성 가능
 - 기존 Markdown 파일 수정 가능
 - `create_markdown` 호출로 문서 생성 가능
+- 인코딩 손상 의심 연속 물음표 입력은 생성 전 거절 가능
 - `export_docx_from_markdown` 호출로 DOCX 생성 가능
 - DOCX 출력에 기본 스타일 프로필 적용 가능
 - `extract_docx_text` 호출로 DOCX 문단과 표 텍스트 추출 가능
@@ -203,7 +204,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 
 ## 커밋 전 상태
 
-- 로컬 테스트 통과: 32개
+- 로컬 테스트 통과: 36개
 - 민감값 저장소 포함 여부 확인: 포함 없음
 - 런타임 산출물은 `.gitignore`로 제외
 - `uv.lock` 생성됨

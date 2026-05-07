@@ -17,6 +17,7 @@
 - Markdown 기반 DOCX 생성
 - DOCX 기본 스타일 프로필 적용
 - 기존 DOCX 텍스트 추출
+- 인코딩 손상 의심 연속 물음표 입력 차단
 - 시트 목록 기반 XLSX 생성
 - 슬라이드 spec 기반 PPTX 생성
 - PPTX 기본 스타일 프로필 적용
@@ -53,7 +54,7 @@
 
 ## 검증 상태
 
-- 로컬 테스트: `uv run pytest` 기준 32개 통과
+- 로컬 테스트: `uv run pytest` 기준 36개 통과
 - 로컬 MCP 클라이언트 기준 전체 도구 노출 확인
 - 로컬 MCP 클라이언트 배치 스모크 검증: 18개 도구 통과
 - ngrok HTTPS 경유 MCP 호출 확인
@@ -62,6 +63,7 @@
 - 로컬 MCP 클라이언트 기준 템플릿 DOCX 생성 확인
 - Markdown 변환 DOCX와 템플릿 DOCX 스타일 프로필 적용 확인
 - spec 기반 PPTX와 템플릿 PPTX 스타일 프로필 적용 확인
+- 깨진 한글 입력 방지를 위한 연속 물음표 차단 테스트 확인
 - ChatGPT UI 모델 제약 확인: GPT Pro 모델에서는 MCP 미노출 가능, Thinking 모드에서 호출 필요
 
 ## 남은 확인
