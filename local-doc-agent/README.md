@@ -33,7 +33,7 @@ ChatGPT 개발자 모드 커스텀 커넥터가 HTTPS 터널의 `/mcp` 엔드포
 `create_pptx_from_spec`는 제목, 부제, 슬라이드 목록을 받아 PPTX 초안을 신규 생성한다.
 출력 파일은 workspace 내부 경로만 허용하며, 기존 PPTX 파일을 덮어쓸 경우 백업을 생성한다.
 
-이미지와 템플릿 기능은 DOCX, XLSX, PPTX 생성이 ChatGPT 개발자 모드에서 실제 동작하는 것을 확인한 뒤 추가한다.
+DOCX, XLSX, PPTX 생성은 로컬 MCP 클라이언트와 ChatGPT UI 기준으로 기본 호출 검증이 완료되었다.
 
 ## 3단계 이미지 도구
 
@@ -56,9 +56,11 @@ ChatGPT 개발자 모드 커스텀 커넥터가 HTTPS 터널의 `/mcp` 엔드포
 
 - `list_templates`
 - `create_markdown_from_template`
+- `create_docx_from_template`
 
 `list_templates`는 내장 템플릿 목록을 조회한다.
 `create_markdown_from_template`은 템플릿 이름, 제목, 요약, 변수 값을 받아 Markdown 문서 초안을 생성한다.
+`create_docx_from_template`은 내장 템플릿을 기반으로 DOCX 문서 초안을 생성한다.
 
 현재 내장 템플릿:
 
@@ -104,7 +106,7 @@ uv run pytest
 현재 확인 결과:
 
 ```text
-23 passed
+26 passed
 ```
 
 테스트 범위:
@@ -125,6 +127,31 @@ uv run pytest
 - PPTX 이미지 삽입
 - 템플릿 목록 조회
 - 템플릿 기반 Markdown 생성
+- 템플릿 기반 DOCX 생성
+
+## 배치 스모크 검증
+
+MCP 연결 검증은 개별 도구를 하나씩 확인하는 방식보다 배치 스모크 검증을 우선한다.
+서버 실행 후 다음 명령으로 주요 도구를 한 번에 호출한다.
+
+```powershell
+uv run python scripts/smoke_mcp.py --url http://127.0.0.1:2091/mcp
+```
+
+ngrok 경유 확인이 필요할 경우 URL만 교체한다.
+
+```powershell
+uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
+```
+
+검증 대상:
+
+- 연결 확인
+- 파일 목록, 읽기, 쓰기, 패치
+- Markdown 생성
+- DOCX, XLSX, PPTX 생성
+- 이미지 저장 및 삽입
+- 템플릿 목록, Markdown 템플릿, DOCX 템플릿 생성
 
 ## HTTPS 터널
 
@@ -142,19 +169,11 @@ https://example.ngrok-free.app/mcp
 
 ## 다음 작업
 
-1. 서버 실행
-2. HTTPS 터널 실행
-3. ChatGPT 개발자 모드 커스텀 커넥터에 `/mcp` 주소 등록
-4. `ping`, `list_files`, `read_text_file` 노출 확인
-5. `write_text_file`, `patch_text_file` 실제 호출 가능 여부 확인
-6. `create_markdown` 실제 호출 가능 여부 확인
-7. `export_docx_from_markdown` 실제 호출 가능 여부 확인
-8. `create_xlsx_from_sheets` 실제 호출 가능 여부 확인
-9. `create_pptx_from_spec` 실제 호출 가능 여부 확인
-10. `list_assets`, `save_base64_image`, `insert_image_to_markdown` 실제 호출 가능 여부 확인
-11. `insert_image_to_pptx` 실제 호출 가능 여부 확인
-12. `list_templates`, `create_markdown_from_template` 실제 호출 가능 여부 확인
-13. 권한 확인 모달 또는 호출 제한 발생 여부 기록
+1. 배치 스모크 검증 스크립트 유지
+2. ChatGPT UI 모드별 MCP 도구 노출 제약 기록
+3. 템플릿 기반 PPTX 생성 검토
+4. DOCX 스타일 고도화 검토
+5. PPTX 레이아웃 품질 고도화 검토
 
 쓰기 도구가 제한될 경우, 1차 대응은 읽기 전용 검증 모드로 전환한다.
 

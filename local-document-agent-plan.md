@@ -846,6 +846,8 @@ MVP에서 제외하는 항목:
 - 로컬 MCP 클라이언트 기준 템플릿 도구 2종 노출 및 호출 성공
 - 4단계 기능 `create_docx_from_template` 구현 완료
 - 로컬 MCP 클라이언트 기준 템플릿 DOCX 생성 호출 성공
+- 로컬 MCP 클라이언트 배치 스모크 검증 스크립트 추가 완료
+- ChatGPT UI 제약 확인: GPT Pro 모델에서는 MCP 도구 미노출 가능, Thinking 모드에서 호출 필요
 
 미확정 항목:
 

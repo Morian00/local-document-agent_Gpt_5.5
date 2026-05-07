@@ -12,6 +12,7 @@
 - MCP 클라이언트 기준 도구 목록 조회 성공
 - `ping` 호출 성공
 - 로컬 pytest 기준 통과: 26개 테스트
+- 배치 스모크 검증 스크립트 기준 주요 도구 16개 일괄 호출 성공
 
 ## 현재 ChatGPT UI 검증 상태
 
@@ -26,11 +27,18 @@
 - 오류 반환 로그 기록 확인 완료
 - 0~1단계 MVP 검증 완료
 - ChatGPT UI 기준 `export_docx_from_markdown` 호출 성공
-- 다음 검증 대상: `create_xlsx_from_sheets`
+- ChatGPT UI 기준 `create_xlsx_from_sheets` 호출 성공
 - 로컬 MCP 클라이언트 기준 `create_pptx_from_spec` 호출 성공
 - 로컬 MCP 클라이언트 기준 `list_assets`, `save_base64_image`, `insert_image_to_markdown` 호출 성공
 - 로컬 MCP 클라이언트 기준 `insert_image_to_pptx` 호출 성공
 - 로컬 MCP 클라이언트 기준 `list_templates`, `create_markdown_from_template`, `create_docx_from_template` 호출 성공
+
+## 현재 UI 제약
+
+- GPT Pro 모델에서는 현재 MCP 도구가 노출되지 않을 수 있음
+- Thinking 모드에서 커스텀 커넥터 MCP 도구 호출 필요
+- 모델·모드별 MCP 노출 정책은 ChatGPT UI 정책 변경 가능성 존재
+- 검증 시점, 사용 모델, 사용 모드를 함께 기록 권장
 
 현재 노출 도구:
 
@@ -103,6 +111,42 @@ https://example.ngrok-free.app/mcp
 21. `create_docx_from_template`으로 템플릿 기반 DOCX 생성
 22. 권한 확인 모달, 호출 제한, 오류 메시지 기록: 진행 중
 
+## 배치 스모크 검증
+
+개별 도구 수동 검증은 초기 연결 확인에만 사용한다.
+기능 회귀 확인은 로컬 MCP 클라이언트 배치 스모크 검증을 우선한다.
+
+실행 명령:
+
+```powershell
+uv run python scripts/smoke_mcp.py --url http://127.0.0.1:2091/mcp
+```
+
+HTTPS 터널 경유 검증:
+
+```powershell
+uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
+```
+
+배치 검증 범위:
+
+- `ping`
+- `list_files`
+- `write_text_file`
+- `read_text_file`
+- `patch_text_file`
+- `create_markdown`
+- `export_docx_from_markdown`
+- `create_xlsx_from_sheets`
+- `create_pptx_from_spec`
+- `save_base64_image`
+- `list_assets`
+- `insert_image_to_markdown`
+- `insert_image_to_pptx`
+- `list_templates`
+- `create_markdown_from_template`
+- `create_docx_from_template`
+
 ## 성공 기준
 
 - ChatGPT UI에서 도구 목록 확인 가능
@@ -134,10 +178,13 @@ https://example.ngrok-free.app/mcp
 - 오류 반환
 - `create_markdown`
 - `export_docx_from_markdown`
+- `create_xlsx_from_sheets`
+- 로컬 MCP 클라이언트 배치 스모크 검증: 16개 도구 통과
 
 다음 확인 항목:
 
-- `create_xlsx_from_sheets`
+- ChatGPT UI Thinking 모드 기준 남은 도구 최종 확인
+- GPT Pro 모델 MCP 미노출 제약 기록 유지
 - `create_pptx_from_spec`
 - 이미지 도구 4종
 - 템플릿 도구 3종

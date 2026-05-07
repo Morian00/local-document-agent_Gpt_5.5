@@ -49,14 +49,15 @@
 
 - 로컬 테스트: `uv run pytest` 기준 26개 통과
 - 로컬 MCP 클라이언트 기준 전체 도구 노출 확인
+- 로컬 MCP 클라이언트 배치 스모크 검증: 16개 도구 통과
 - ngrok HTTPS 경유 MCP 호출 확인
 - ChatGPT UI 기준 0~1단계 및 DOCX 변환 호출 확인
 - 로컬 MCP 클라이언트 기준 템플릿 도구 호출 확인
 - 로컬 MCP 클라이언트 기준 템플릿 DOCX 생성 확인
+- ChatGPT UI 모델 제약 확인: GPT Pro 모델에서는 MCP 미노출 가능, Thinking 모드에서 호출 필요
 
 ## 남은 확인
 
-- ChatGPT UI 기준 `create_xlsx_from_sheets` 최종 호출 확인
 - ChatGPT UI 기준 `create_pptx_from_spec` 최종 호출 확인
 - ChatGPT UI 기준 이미지 도구 4종 최종 호출 확인
 - ChatGPT UI 기준 템플릿 도구 3종 최종 호출 확인
