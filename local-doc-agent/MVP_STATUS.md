@@ -20,6 +20,7 @@
 - 기존 DOCX 텍스트 추출
 - 인코딩 손상 의심 연속 물음표 입력 차단
 - 시트 목록 기반 XLSX 생성
+- 기존 XLSX 셀 텍스트 추출 및 검색
 - 슬라이드 spec 기반 PPTX 생성
 - PPTX 기본 스타일 프로필 적용
 - assets 이미지 목록 조회
@@ -47,6 +48,7 @@
 - `export_docx_from_markdown`
 - `extract_docx_text`
 - `create_xlsx_from_sheets`
+- `extract_xlsx_text`
 - `create_pptx_from_spec`
 - `save_base64_image`
 - `insert_image_to_markdown`
@@ -55,9 +57,9 @@
 
 ## 검증 상태
 
-- 로컬 테스트: `uv run pytest` 기준 36개 통과
+- 로컬 테스트: `uv run pytest` 기준 39개 통과
 - 로컬 MCP 클라이언트 기준 전체 도구 노출 확인
-- 로컬 MCP 클라이언트 배치 스모크 검증: 18개 도구 통과
+- 로컬 MCP 클라이언트 배치 스모크 검증: 19개 도구 통과
 - ngrok HTTPS 경유 MCP 호출 확인
 - ChatGPT UI 기준 0~1단계 및 DOCX 변환 호출 확인
 - 로컬 MCP 클라이언트 기준 템플릿 도구 호출 확인
@@ -72,6 +74,7 @@
 
 - ChatGPT UI 기준 `create_pptx_from_spec` 최종 호출 확인
 - ChatGPT UI 기준 `extract_docx_text` 최종 호출 확인
+- ChatGPT UI 기준 `extract_xlsx_text` 최종 호출 확인
 - ChatGPT UI 기준 이미지 도구 4종 최종 호출 확인
 - ChatGPT UI 기준 템플릿 도구 4종 최종 호출 확인
 - 쓰기 도구 반복 호출 시 권한 확인 모달 발생 패턴 기록

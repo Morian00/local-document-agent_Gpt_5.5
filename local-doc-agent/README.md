@@ -23,6 +23,7 @@ ChatGPT 개발자 모드 커스텀 커넥터가 HTTPS 터널의 `/mcp` 엔드포
 - `export_docx_from_markdown`
 - `extract_docx_text`
 - `create_xlsx_from_sheets`
+- `extract_xlsx_text`
 - `create_pptx_from_spec`
 
 `export_docx_from_markdown`은 workspace 내부 Markdown 파일을 읽어 DOCX 파일로 저장한다.
@@ -32,6 +33,7 @@ DOCX 출력에는 기본 한글 문서 스타일 프로필을 적용한다.
 
 `create_xlsx_from_sheets`는 시트 목록, 헤더, 행 데이터를 받아 XLSX 파일을 신규 생성한다.
 출력 파일은 workspace 내부 경로만 허용하며, 기존 XLSX 파일을 덮어쓸 경우 백업을 생성한다.
+`extract_xlsx_text`는 workspace 내부 XLSX 파일의 셀 텍스트를 추출하고, query 값이 있으면 일치 셀을 검색한다.
 
 `create_pptx_from_spec`는 제목, 부제, 슬라이드 목록을 받아 PPTX 초안을 신규 생성한다.
 출력 파일은 workspace 내부 경로만 허용하며, 기존 PPTX 파일을 덮어쓸 경우 백업을 생성한다.
@@ -127,7 +129,7 @@ uv run pytest
 현재 확인 결과:
 
 ```text
-36 passed
+39 passed
 ```
 
 테스트 범위:
@@ -144,6 +146,7 @@ uv run pytest
 - 기존 DOCX 텍스트 추출
 - 인코딩 손상 의심 연속 물음표 입력 차단
 - 시트 목록 기반 XLSX 생성
+- 기존 XLSX 셀 텍스트 추출 및 검색
 - 슬라이드 spec 기반 PPTX 생성
 - PPTX 기본 스타일 프로필 적용
 - base64 이미지 저장
@@ -175,7 +178,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - 연결 확인
 - 파일 목록, 읽기, 쓰기, 패치
 - Markdown 생성
-- DOCX 생성 및 텍스트 추출, XLSX, PPTX 생성
+- DOCX 생성 및 텍스트 추출, XLSX 생성 및 셀 검색, PPTX 생성
 - 이미지 저장 및 삽입
 - 템플릿 목록, Markdown 템플릿, DOCX 템플릿, PPTX 템플릿 생성
 

@@ -849,6 +849,8 @@ MVP에서 제외하는 항목:
 - DOCX 기본 스타일 프로필 적용 완료
 - 2단계 기능 `extract_docx_text` 구현 완료
 - 로컬 MCP 클라이언트 기준 DOCX 텍스트 추출 호출 성공
+- 2단계 기능 `extract_xlsx_text` 구현 완료
+- 로컬 MCP 클라이언트 기준 XLSX 셀 텍스트 추출 및 검색 호출 성공
 - 입력 품질 가드 구현 완료: 인코딩 손상 의심 연속 물음표 차단
 - Windows PowerShell UTF-8 실행 스크립트 추가 완료
 - 4단계 기능 `create_pptx_from_template` 구현 완료
@@ -978,6 +980,8 @@ MVP에서 제외하는 항목:
 - 기존 DOCX 덮어쓰기 시 백업 가능
 - `create_xlsx_from_sheets` 구현 완료
 - 시트 목록, 헤더, 행 데이터 기반 XLSX 신규 생성 가능
+- `extract_xlsx_text` 구현 완료
+- XLSX 셀 텍스트 추출과 query 기반 검색 가능
 - 기존 XLSX 덮어쓰기 시 백업 가능
 - `create_pptx_from_spec` 구현 완료
 - 제목, 부제, 슬라이드 제목, 본문, 불릿, 노트 기반 PPTX 신규 생성 가능

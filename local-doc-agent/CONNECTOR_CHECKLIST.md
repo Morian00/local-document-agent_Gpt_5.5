@@ -11,8 +11,8 @@
 - 로컬 MCP 엔드포인트: `http://127.0.0.1:2091/mcp`
 - MCP 클라이언트 기준 도구 목록 조회 성공
 - `ping` 호출 성공
-- 로컬 pytest 기준 통과: 36개 테스트
-- 배치 스모크 검증 스크립트 기준 주요 도구 18개 일괄 호출 성공
+- 로컬 pytest 기준 통과: 39개 테스트
+- 배치 스모크 검증 스크립트 기준 주요 도구 19개 일괄 호출 성공
 
 ## 현재 ChatGPT UI 검증 상태
 
@@ -54,6 +54,7 @@
 - `extract_docx_text`
 - `export_docx_from_markdown`
 - `create_xlsx_from_sheets`
+- `extract_xlsx_text`
 - `create_pptx_from_spec`
 - `list_assets`
 - `save_base64_image`
@@ -111,16 +112,17 @@ https://example.ngrok-free.app/mcp
 12. `export_docx_from_markdown`으로 DOCX 파일 생성: 완료
 13. `extract_docx_text`로 DOCX 텍스트 추출
 14. `create_xlsx_from_sheets`로 XLSX 파일 생성
-15. `create_pptx_from_spec`로 PPTX 파일 생성
-16. `save_base64_image`로 이미지 저장
-17. `list_assets`로 이미지 목록 조회
-18. `insert_image_to_markdown`으로 Markdown 이미지 링크 삽입
-19. `insert_image_to_pptx`로 PPTX 이미지 삽입
-20. `list_templates`로 템플릿 목록 조회
-21. `create_markdown_from_template`으로 템플릿 기반 Markdown 생성
-22. `create_docx_from_template`으로 템플릿 기반 DOCX 생성
-23. `create_pptx_from_template`으로 템플릿 기반 PPTX 생성
-24. 권한 확인 모달, 호출 제한, 오류 메시지 기록: 진행 중
+15. `extract_xlsx_text`로 XLSX 셀 텍스트 검색
+16. `create_pptx_from_spec`로 PPTX 파일 생성
+17. `save_base64_image`로 이미지 저장
+18. `list_assets`로 이미지 목록 조회
+19. `insert_image_to_markdown`으로 Markdown 이미지 링크 삽입
+20. `insert_image_to_pptx`로 PPTX 이미지 삽입
+21. `list_templates`로 템플릿 목록 조회
+22. `create_markdown_from_template`으로 템플릿 기반 Markdown 생성
+23. `create_docx_from_template`으로 템플릿 기반 DOCX 생성
+24. `create_pptx_from_template`으로 템플릿 기반 PPTX 생성
+25. 권한 확인 모달, 호출 제한, 오류 메시지 기록: 진행 중
 
 ## 배치 스모크 검증
 
@@ -150,6 +152,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - `export_docx_from_markdown`
 - `extract_docx_text`
 - `create_xlsx_from_sheets`
+- `extract_xlsx_text`
 - `create_pptx_from_spec`
 - `save_base64_image`
 - `list_assets`
@@ -173,6 +176,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - DOCX 출력에 기본 스타일 프로필 적용 가능
 - `extract_docx_text` 호출로 DOCX 문단과 표 텍스트 추출 가능
 - `create_xlsx_from_sheets` 호출로 XLSX 생성 가능
+- `extract_xlsx_text` 호출로 XLSX 셀 텍스트 추출 및 검색 가능
 - `create_pptx_from_spec` 호출로 PPTX 생성 가능
 - PPTX 출력에 기본 스타일 프로필 적용 가능
 - `save_base64_image` 호출로 이미지 저장 가능
@@ -199,7 +203,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - `create_markdown`
 - `export_docx_from_markdown`
 - `create_xlsx_from_sheets`
-- 로컬 MCP 클라이언트 배치 스모크 검증: 18개 도구 통과
+- 로컬 MCP 클라이언트 배치 스모크 검증: 19개 도구 통과
 
 다음 확인 항목:
 
@@ -211,7 +215,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 
 ## 커밋 전 상태
 
-- 로컬 테스트 통과: 36개
+- 로컬 테스트 통과: 39개
 - 민감값 저장소 포함 여부 확인: 포함 없음
 - 런타임 산출물은 `.gitignore`로 제외
 - `uv.lock` 생성됨
@@ -250,6 +254,12 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 
 ```text
 로컬 문서 MCP의 create_xlsx_from_sheets를 호출해서 output/sample-checklist.xlsx 파일을 만들어줘. 시트 이름은 Checklist, 헤더는 항목, 담당, 상태로 하고, 행은 "DOCX 검증/Planner/완료", "XLSX 검증/Planner/진행 중"으로 넣어줘.
+```
+
+## XLSX 셀 검색 검증 요청 예시
+
+```text
+로컬 문서 MCP의 extract_xlsx_text를 호출해서 output/sample-checklist.xlsx 파일에서 "검증"이 들어간 셀을 찾아줘. max_cells는 200으로 제한해줘.
 ```
 
 ## PPTX 생성 검증 요청 예시

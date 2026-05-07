@@ -366,6 +366,93 @@ def _write_xlsx_from_sheets_result(
     }
 
 
+def _extract_xlsx_text_result(
+    source_path: str,
+    query: str | None = None,
+    max_cells: int = 5000,
+    max_chars: int | None = None,
+) -> dict[str, Any]:
+    from openpyxl import load_workbook
+
+    source = _resolve_workspace_path(source_path)
+    _ensure_extension(source, {".xlsx"}, "XLSX 텍스트 추출 입력 파일")
+
+    if not source.exists():
+        raise FileNotFoundError(f"파일을 찾을 수 없음: {source_path}")
+    if not source.is_file():
+        raise ValueError(f"파일이 아님: {source_path}")
+
+    cell_limit = max(max_cells, 1)
+    char_limit = max_chars or settings.max_read_chars
+    normalized_query = query.casefold() if query else None
+
+    workbook = load_workbook(source, read_only=True, data_only=True)
+    sheets: list[dict[str, Any]] = []
+    matches: list[dict[str, Any]] = []
+    text_lines: list[str] = []
+    total_cells = 0
+    truncated = False
+
+    try:
+        for worksheet in workbook.worksheets:
+            sheet_values: list[dict[str, Any]] = []
+
+            for row in worksheet.iter_rows():
+                for cell in row:
+                    if cell.value is None:
+                        continue
+
+                    value = str(cell.value)
+                    entry = {
+                        "coordinate": cell.coordinate,
+                        "row": cell.row,
+                        "column": cell.column,
+                        "value": value,
+                    }
+                    sheet_values.append(entry)
+                    text_lines.append(f"{worksheet.title}!{cell.coordinate}: {value}")
+                    total_cells += 1
+
+                    if normalized_query and normalized_query in value.casefold():
+                        matches.append({"sheet": worksheet.title, **entry})
+
+                    if total_cells >= cell_limit:
+                        truncated = True
+                        break
+                if truncated:
+                    break
+
+            sheets.append(
+                {
+                    "name": worksheet.title,
+                    "cell_count": len(sheet_values),
+                    "cells": sheet_values,
+                }
+            )
+
+            if truncated:
+                break
+    finally:
+        workbook.close()
+
+    full_text = "\n".join(text_lines)
+    text_truncated = len(full_text) > char_limit
+
+    return {
+        "ok": True,
+        "path": _to_workspace_relative(source),
+        "source_path": _to_workspace_relative(source),
+        "text": full_text[:char_limit] if text_truncated else full_text,
+        "sheets": sheets,
+        "sheet_count": len(sheets),
+        "cell_count": total_cells,
+        "query": query,
+        "matches": matches,
+        "match_count": len(matches),
+        "truncated": truncated or text_truncated,
+    }
+
+
 def _normalize_slide_items(value: Any) -> list[str]:
     if value is None:
         return []
@@ -658,6 +745,23 @@ def create_xlsx_from_sheets_tool(
         )
 
     return _safe_result("create_xlsx_from_sheets", action)
+
+
+def extract_xlsx_text_tool(
+    source_path: str,
+    query: str | None = None,
+    max_cells: int = 5000,
+    max_chars: int | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        return _extract_xlsx_text_result(
+            source_path=source_path,
+            query=query,
+            max_cells=max_cells,
+            max_chars=max_chars,
+        )
+
+    return _safe_result("extract_xlsx_text", action)
 
 
 def create_pptx_from_spec_tool(

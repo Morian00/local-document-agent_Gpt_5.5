@@ -293,6 +293,65 @@ def test_create_xlsx_rejects_suspicious_question_marks(monkeypatch, tmp_path):
     assert "인코딩 손상" in result["error"]
 
 
+def test_extract_xlsx_text(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    tools.create_xlsx_from_sheets_tool(
+        output_path="output/plan.xlsx",
+        sheets=[
+            {
+                "name": "Checklist",
+                "headers": ["항목", "담당", "상태"],
+                "rows": [
+                    ["DOCX 검증", "Planner", "완료"],
+                    ["XLSX 검색", "Planner", "진행 중"],
+                ],
+            }
+        ],
+    )
+
+    extracted = tools.extract_xlsx_text_tool(
+        source_path="output/plan.xlsx",
+        query="검증",
+    )
+
+    assert extracted["ok"] is True
+    assert extracted["path"] == "output/plan.xlsx"
+    assert extracted["sheet_count"] == 1
+    assert extracted["cell_count"] == 9
+    assert extracted["match_count"] == 1
+    assert extracted["matches"][0]["sheet"] == "Checklist"
+    assert extracted["matches"][0]["coordinate"] == "A2"
+    assert "Checklist!A2: DOCX 검증" in extracted["text"]
+
+
+def test_extract_xlsx_text_truncates_cells(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    tools.create_xlsx_from_sheets_tool(
+        output_path="output/plan.xlsx",
+        sheets=[{"name": "Data", "rows": [["A"], ["B"], ["C"]]}],
+    )
+
+    extracted = tools.extract_xlsx_text_tool(
+        source_path="output/plan.xlsx",
+        max_cells=2,
+    )
+
+    assert extracted["ok"] is True
+    assert extracted["cell_count"] == 2
+    assert extracted["truncated"] is True
+
+
+def test_extract_xlsx_text_rejects_bad_extension(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    result = tools.extract_xlsx_text_tool(source_path="output/plan.csv")
+
+    assert result["ok"] is False
+    assert ".xlsx" in result["error"]
+
+
 def test_create_pptx_from_spec(monkeypatch, tmp_path):
     tools, settings = _reload_modules(monkeypatch, tmp_path)
 

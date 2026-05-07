@@ -13,6 +13,7 @@ if __package__ in {None, ""}:
         create_pptx_from_spec_tool,
         create_xlsx_from_sheets_tool,
         extract_docx_text_tool,
+        extract_xlsx_text_tool,
         export_docx_from_markdown_tool,
         insert_image_to_markdown_tool,
         insert_image_to_pptx_tool,
@@ -37,6 +38,7 @@ else:
         create_pptx_from_spec_tool,
         create_xlsx_from_sheets_tool,
         extract_docx_text_tool,
+        extract_xlsx_text_tool,
         export_docx_from_markdown_tool,
         insert_image_to_markdown_tool,
         insert_image_to_pptx_tool,
@@ -249,6 +251,22 @@ def create_xlsx_from_sheets(
         sheets=sheets,
         overwrite=overwrite,
         create_backup=create_backup,
+    )
+
+
+@mcp.tool()
+def extract_xlsx_text(
+    source_path: str,
+    query: str | None = None,
+    max_cells: int = 5000,
+    max_chars: int | None = None,
+) -> dict:
+    """Extract and optionally search cell text from an XLSX file inside the workspace."""
+    return extract_xlsx_text_tool(
+        source_path=source_path,
+        query=query,
+        max_cells=max_cells,
+        max_chars=max_chars,
     )
 
 

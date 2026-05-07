@@ -97,6 +97,15 @@ def _core_calls() -> list[SmokeCall]:
             },
         ),
         SmokeCall(
+            "extract_xlsx_text",
+            {
+                "source_path": "output/smoke-checklist.xlsx",
+                "query": "완료",
+                "max_cells": 200,
+                "max_chars": 4000,
+            },
+        ),
+        SmokeCall(
             "create_pptx_from_spec",
             {
                 "output_path": "output/smoke-deck.pptx",
