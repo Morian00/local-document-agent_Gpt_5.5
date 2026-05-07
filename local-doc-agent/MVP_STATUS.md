@@ -13,6 +13,7 @@
 - 텍스트 파일 목록 조회, 읽기, 쓰기, 패치
 - 기존 파일 자동 백업
 - JSONL 작업 로그
+- Windows PowerShell UTF-8 실행 스크립트
 - Markdown 구조화 문서 생성
 - Markdown 기반 DOCX 생성
 - DOCX 기본 스타일 프로필 적용
@@ -64,6 +65,7 @@
 - Markdown 변환 DOCX와 템플릿 DOCX 스타일 프로필 적용 확인
 - spec 기반 PPTX와 템플릿 PPTX 스타일 프로필 적용 확인
 - 깨진 한글 입력 방지를 위한 연속 물음표 차단 테스트 확인
+- Windows PowerShell UTF-8 실행 경로 문서화
 - ChatGPT UI 모델 제약 확인: GPT Pro 모델에서는 MCP 미노출 가능, Thinking 모드에서 호출 필요
 
 ## 남은 확인

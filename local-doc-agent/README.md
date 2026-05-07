@@ -85,6 +85,18 @@ Python 3.12+와 `uv` 설치가 필요하다.
 cd local-doc-agent
 uv sync
 Copy-Item .env.example .env
+.\scripts\start_server.ps1
+```
+
+Windows PowerShell에서 직접 실행할 경우 서버 시작 전에 UTF-8 환경을 먼저 고정한다.
+
+```powershell
+chcp 65001
+[Console]::InputEncoding = [System.Text.UTF8Encoding]::new()
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new()
+$OutputEncoding = [System.Text.UTF8Encoding]::new()
+$env:PYTHONUTF8 = "1"
+$env:PYTHONIOENCODING = "utf-8"
 uv run python -m server.main
 ```
 

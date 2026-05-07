@@ -66,8 +66,15 @@
 필요 항목:
 
 - 로컬 서버 실행 상태 유지
+- Windows PowerShell 실행 시 UTF-8 서버 실행 스크립트 사용
 - HTTPS 터널 도구 설치
 - ChatGPT 개발자 모드 커스텀 커넥터 접근 권한
+
+서버 실행 예시:
+
+```powershell
+.\scripts\start_server.ps1
+```
 
 MVP 검증은 ngrok만 사용한다.
 Cloudflare Tunnel은 고정 도메인, 운영 안정성, 장기 운영이 필요해졌을 때 검토한다.

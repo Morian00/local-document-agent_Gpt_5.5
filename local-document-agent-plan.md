@@ -850,6 +850,7 @@ MVP에서 제외하는 항목:
 - 2단계 기능 `extract_docx_text` 구현 완료
 - 로컬 MCP 클라이언트 기준 DOCX 텍스트 추출 호출 성공
 - 입력 품질 가드 구현 완료: 인코딩 손상 의심 연속 물음표 차단
+- Windows PowerShell UTF-8 실행 스크립트 추가 완료
 - 4단계 기능 `create_pptx_from_template` 구현 완료
 - 로컬 MCP 클라이언트 기준 템플릿 PPTX 생성 호출 성공
 - PPTX 기본 스타일 프로필 적용 완료

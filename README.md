@@ -83,7 +83,7 @@ Python 3.12+와 `uv` 설치 후:
 cd local-doc-agent
 uv sync
 Copy-Item .env.example .env
-uv run python -m server.main
+.\scripts\start_server.ps1
 ```
 
 기본 MCP 엔드포인트:
