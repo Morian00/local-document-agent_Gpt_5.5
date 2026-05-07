@@ -844,6 +844,8 @@ MVP에서 제외하는 항목:
 - 유지보수 정리: 이미지 도구 구현을 `server/tools_assets.py`로 분리 완료
 - 4단계 기능 `list_templates`, `create_markdown_from_template` 구현 완료
 - 로컬 MCP 클라이언트 기준 템플릿 도구 2종 노출 및 호출 성공
+- 4단계 기능 `create_docx_from_template` 구현 완료
+- 로컬 MCP 클라이언트 기준 템플릿 DOCX 생성 호출 성공
 
 미확정 항목:
 
@@ -853,18 +855,18 @@ MVP에서 제외하는 항목:
 - ChatGPT UI 기준 `create_pptx_from_spec` 호출 성공 여부
 - PPTX 템플릿, 폰트, 이미지 배치 품질 기준
 - ChatGPT UI 기준 이미지 도구 4종 호출 성공 여부
-- ChatGPT UI 기준 템플릿 도구 2종 호출 성공 여부
+- ChatGPT UI 기준 템플릿 도구 3종 호출 성공 여부
 
 다음 우선 작업:
 
 1. ChatGPT UI에서 `create_xlsx_from_sheets` 호출 확인
 2. ChatGPT UI에서 `create_pptx_from_spec` 호출 확인
 3. ChatGPT UI에서 이미지 도구 4종 호출 확인
-4. ChatGPT UI에서 템플릿 도구 2종 호출 확인
+4. ChatGPT UI에서 템플릿 도구 3종 호출 확인
 5. 권한 제한 여부 기록
 6. `create_markdown` 사용 예시 보강
 7. DOCX/XLSX/PPTX 품질 기준 보강
-8. 템플릿 기반 DOCX/PPTX 생성 착수 여부 결정
+8. 템플릿 기반 PPTX 생성 착수 여부 결정
 
 ### 11.0 구현 시작 전 체크리스트
 
@@ -1030,12 +1032,15 @@ MVP에서 제외하는 항목:
 
 - `list_templates` 구현 완료
 - `create_markdown_from_template` 구현 완료
+- `create_docx_from_template` 구현 완료
 - 내장 템플릿 3종 제공
   - `planning_doc`
   - `proposal_doc`
   - `checklist_doc`
 - 템플릿 기반 Markdown 초안 생성 가능
+- 템플릿 기반 DOCX 문서 생성 가능
 - 기존 Markdown 덮어쓰기 시 백업 가능
+- 기존 DOCX 덮어쓰기 시 백업 가능
 - 로컬 pytest 기준 통과
 - 로컬 MCP 클라이언트 기준 호출 성공
 - ChatGPT UI 호출 검증 대기

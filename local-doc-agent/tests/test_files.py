@@ -28,6 +28,7 @@ def _reload_modules(monkeypatch, tmp_path):
     importlib.reload(tools_templates)
     tools_files.list_templates_tool = tools_templates.list_templates_tool
     tools_files.create_markdown_from_template_tool = tools_templates.create_markdown_from_template_tool
+    tools_files.create_docx_from_template_tool = tools_templates.create_docx_from_template_tool
     return tools_files, config.settings
 
 
@@ -423,3 +424,60 @@ def test_create_markdown_from_template_rejects_unknown_template(monkeypatch, tmp
 
     assert result["ok"] is False
     assert "template_name" in result["error"]
+
+
+def test_create_docx_from_template(monkeypatch, tmp_path):
+    tools, settings = _reload_modules(monkeypatch, tmp_path)
+
+    created = tools.create_docx_from_template_tool(
+        template_name="proposal_doc",
+        output_path="output/proposal.docx",
+        title="문서 자동화 제안서",
+        summary="로컬 문서 작업 자동화를 제안한다.",
+    )
+
+    assert created["ok"] is True
+    assert created["path"] == "output/proposal.docx"
+    assert created["output_path"] == "output/proposal.docx"
+    assert created["template_name"] == "proposal_doc"
+    assert created["heading_count"] > 0
+    assert created["paragraph_count"] > 0
+
+    document = Document(settings.workspace_root / "output" / "proposal.docx")
+    texts = [paragraph.text for paragraph in document.paragraphs]
+    assert "문서 자동화 제안서" in texts
+    assert "제안 배경" in texts
+    assert "로컬 문서 작업 자동화를 제안한다." in texts
+
+
+def test_create_docx_from_template_creates_backup(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    first = tools.create_docx_from_template_tool(
+        template_name="planning_doc",
+        output_path="output/template.docx",
+        title="첫 문서",
+    )
+    second = tools.create_docx_from_template_tool(
+        template_name="planning_doc",
+        output_path="output/template.docx",
+        title="두 번째 문서",
+    )
+
+    assert first["ok"] is True
+    assert second["ok"] is True
+    assert second["created"] is False
+    assert second["backup_path"] is not None
+
+
+def test_create_docx_from_template_rejects_bad_extension(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    result = tools.create_docx_from_template_tool(
+        template_name="planning_doc",
+        output_path="output/template.md",
+        title="잘못된 확장자",
+    )
+
+    assert result["ok"] is False
+    assert ".docx" in result["error"]

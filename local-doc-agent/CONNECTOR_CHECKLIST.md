@@ -11,7 +11,7 @@
 - 로컬 MCP 엔드포인트: `http://127.0.0.1:2091/mcp`
 - MCP 클라이언트 기준 도구 목록 조회 성공
 - `ping` 호출 성공
-- 로컬 pytest 기준 통과: 23개 테스트
+- 로컬 pytest 기준 통과: 26개 테스트
 
 ## 현재 ChatGPT UI 검증 상태
 
@@ -30,7 +30,7 @@
 - 로컬 MCP 클라이언트 기준 `create_pptx_from_spec` 호출 성공
 - 로컬 MCP 클라이언트 기준 `list_assets`, `save_base64_image`, `insert_image_to_markdown` 호출 성공
 - 로컬 MCP 클라이언트 기준 `insert_image_to_pptx` 호출 성공
-- 로컬 MCP 클라이언트 기준 `list_templates`, `create_markdown_from_template` 호출 성공
+- 로컬 MCP 클라이언트 기준 `list_templates`, `create_markdown_from_template`, `create_docx_from_template` 호출 성공
 
 현재 노출 도구:
 
@@ -41,6 +41,7 @@
 - `write_text_file`
 - `create_markdown`
 - `create_markdown_from_template`
+- `create_docx_from_template`
 - `export_docx_from_markdown`
 - `create_xlsx_from_sheets`
 - `create_pptx_from_spec`
@@ -99,7 +100,8 @@ https://example.ngrok-free.app/mcp
 18. `insert_image_to_pptx`로 PPTX 이미지 삽입
 19. `list_templates`로 템플릿 목록 조회
 20. `create_markdown_from_template`으로 템플릿 기반 Markdown 생성
-21. 권한 확인 모달, 호출 제한, 오류 메시지 기록: 진행 중
+21. `create_docx_from_template`으로 템플릿 기반 DOCX 생성
+22. 권한 확인 모달, 호출 제한, 오류 메시지 기록: 진행 중
 
 ## 성공 기준
 
@@ -118,6 +120,7 @@ https://example.ngrok-free.app/mcp
 - `insert_image_to_pptx` 호출로 PPTX 이미지 삽입 가능
 - `list_templates` 호출로 템플릿 목록 조회 가능
 - `create_markdown_from_template` 호출로 템플릿 기반 Markdown 생성 가능
+- `create_docx_from_template` 호출로 템플릿 기반 DOCX 생성 가능
 - 오류 발생 시 오류 메시지가 ChatGPT 응답에 반환됨
 
 현재 완료 항목:
@@ -137,11 +140,11 @@ https://example.ngrok-free.app/mcp
 - `create_xlsx_from_sheets`
 - `create_pptx_from_spec`
 - 이미지 도구 4종
-- 템플릿 도구 2종
+- 템플릿 도구 3종
 
 ## 커밋 전 상태
 
-- 로컬 테스트 통과: 23개
+- 로컬 테스트 통과: 26개
 - 민감값 저장소 포함 여부 확인: 포함 없음
 - 런타임 산출물은 `.gitignore`로 제외
 - `uv.lock` 생성됨
@@ -198,6 +201,12 @@ https://example.ngrok-free.app/mcp
 
 ```text
 로컬 문서 MCP의 list_templates를 호출해서 사용 가능한 템플릿 목록을 보여줘. 그 다음 create_markdown_from_template을 호출해서 planning_doc 템플릿으로 docs/template-chatgpt.md 파일을 만들어줘. 제목은 전투 시스템 개선안, 요약은 전투 루프와 성장 구조를 정리하는 문서로 해줘.
+```
+
+## 템플릿 DOCX 검증 요청 예시
+
+```text
+로컬 문서 MCP의 create_docx_from_template을 호출해서 proposal_doc 템플릿으로 output/template-proposal-chatgpt.docx 파일을 만들어줘. 제목은 문서 자동화 제안서, 요약은 로컬 문서 작업 자동화를 제안하는 문서로 해줘.
 ```
 
 ## 실패 시 기록 항목

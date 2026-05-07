@@ -143,6 +143,45 @@ def _build_template_markdown(
     return "\n".join(lines).rstrip() + "\n"
 
 
+def _add_markdown_to_docx(document: Any, markdown: str) -> dict[str, int]:
+    heading_count = 0
+    paragraph_count = 0
+
+    for raw_line in markdown.splitlines():
+        line = raw_line.rstrip()
+        stripped = line.strip()
+        if not stripped:
+            continue
+
+        if stripped.startswith("#"):
+            marker, _, heading = stripped.partition(" ")
+            if marker and set(marker) == {"#"} and heading.strip():
+                level = min(max(len(marker), 1), 4)
+                document.add_heading(heading.strip(), level=level)
+                heading_count += 1
+                continue
+
+        if stripped.startswith("- [ ] "):
+            document.add_paragraph(stripped[6:].strip(), style="List Bullet")
+            paragraph_count += 1
+            continue
+
+        if stripped.startswith("- "):
+            document.add_paragraph(stripped[2:].strip(), style="List Bullet")
+            paragraph_count += 1
+            continue
+
+        if re.match(r"^\d+\.\s+", stripped):
+            document.add_paragraph(re.sub(r"^\d+\.\s+", "", stripped), style="List Number")
+            paragraph_count += 1
+            continue
+
+        document.add_paragraph(stripped)
+        paragraph_count += 1
+
+    return {"heading_count": heading_count, "paragraph_count": paragraph_count}
+
+
 def list_templates_tool() -> dict[str, Any]:
     def action() -> dict[str, Any]:
         templates = [
@@ -209,3 +248,60 @@ def create_markdown_from_template_tool(
         }
 
     return _safe_result("create_markdown_from_template", action)
+
+
+def create_docx_from_template_tool(
+    template_name: str,
+    output_path: str,
+    title: str,
+    summary: str = "",
+    variables: dict[str, Any] | None = None,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        from docx import Document
+
+        template = TEMPLATES.get(template_name)
+        if template is None:
+            allowed = ", ".join(sorted(TEMPLATES))
+            raise ValueError(f"알 수 없는 template_name: {template_name}. 사용 가능: {allowed}")
+
+        target = _resolve_workspace_path(output_path)
+        if target.suffix.lower() != ".docx":
+            raise ValueError("템플릿 DOCX 출력 파일은 .docx 확장자만 지원함")
+
+        should_overwrite = settings.default_overwrite if overwrite is None else overwrite
+        should_backup = settings.create_backup if create_backup is None else create_backup
+
+        exists = target.exists()
+        if exists and not should_overwrite:
+            raise FileExistsError(f"파일이 이미 존재함: {output_path}")
+        if exists and not target.is_file():
+            raise ValueError(f"파일이 아님: {output_path}")
+
+        markdown = _build_template_markdown(
+            template=template,
+            title=title,
+            summary=summary,
+            variables=variables or {},
+        )
+        document = Document()
+        counts = _add_markdown_to_docx(document, markdown)
+
+        backup_path = _backup_existing_file(target) if exists and should_backup else None
+        target.parent.mkdir(parents=True, exist_ok=True)
+        document.save(target)
+
+        return {
+            "ok": True,
+            "path": _to_workspace_relative(target),
+            "output_path": _to_workspace_relative(target),
+            "created": not exists,
+            "backup_path": backup_path,
+            "template_name": template_name,
+            "section_count": len(template["sections"]),
+            **counts,
+        }
+
+    return _safe_result("create_docx_from_template", action)
