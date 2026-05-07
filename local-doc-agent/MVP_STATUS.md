@@ -24,6 +24,7 @@
 - 슬라이드 spec 기반 PPTX 생성
 - PPTX 기본 스타일 프로필 적용
 - assets 이미지 목록 조회
+- 이미지 파일 base64/data URI 읽기
 - base64 이미지 저장
 - Markdown 이미지 링크 삽입
 - PPTX 이미지 삽입
@@ -38,6 +39,7 @@
 - `ping`
 - `list_files`
 - `list_assets`
+- `read_image_file`
 - `list_templates`
 - `read_text_file`
 - `write_text_file`
@@ -57,9 +59,9 @@
 
 ## 검증 상태
 
-- 로컬 테스트: `uv run pytest` 기준 39개 통과
+- 로컬 테스트: `uv run pytest` 기준 42개 통과
 - 로컬 MCP 클라이언트 기준 전체 도구 노출 확인
-- 로컬 MCP 클라이언트 배치 스모크 검증: 19개 도구 통과
+- 로컬 MCP 클라이언트 배치 스모크 검증: 20개 도구 통과
 - ngrok HTTPS 경유 MCP 호출 확인
 - ChatGPT UI 기준 0~1단계 및 DOCX 변환 호출 확인
 - 로컬 MCP 클라이언트 기준 템플릿 도구 호출 확인
@@ -75,7 +77,8 @@
 - ChatGPT UI 기준 `create_pptx_from_spec` 최종 호출 확인
 - ChatGPT UI 기준 `extract_docx_text` 최종 호출 확인
 - ChatGPT UI 기준 `extract_xlsx_text` 최종 호출 확인
-- ChatGPT UI 기준 이미지 도구 4종 최종 호출 확인
+- ChatGPT UI 기준 이미지 도구 5종 최종 호출 확인
+- PPTX 슬라이드 이미지 렌더링 기반 디자인 검수 도구 검토
 - ChatGPT UI 기준 템플릿 도구 4종 최종 호출 확인
 - 쓰기 도구 반복 호출 시 권한 확인 모달 발생 패턴 기록
 

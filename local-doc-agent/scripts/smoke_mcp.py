@@ -136,6 +136,15 @@ def _core_calls() -> list[SmokeCall]:
         ),
         SmokeCall("list_assets", {"path": "assets", "recursive": True}),
         SmokeCall(
+            "read_image_file",
+            {
+                "path": "assets/smoke-pixel.png",
+                "include_base64": False,
+                "include_data_uri": True,
+                "max_bytes": 10000,
+            },
+        ),
+        SmokeCall(
             "insert_image_to_markdown",
             {
                 "markdown_path": "docs/smoke-structured.md",

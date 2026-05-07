@@ -21,6 +21,7 @@ if __package__ in {None, ""}:
         list_files_tool,
         patch_text_file_tool,
         ping_tool,
+        read_image_file_tool,
         read_text_file_tool,
         save_base64_image_tool,
         write_text_file_tool,
@@ -46,6 +47,7 @@ else:
         list_files_tool,
         patch_text_file_tool,
         ping_tool,
+        read_image_file_tool,
         read_text_file_tool,
         save_base64_image_tool,
         write_text_file_tool,
@@ -92,6 +94,22 @@ def list_assets(
 ) -> dict:
     """List image assets inside the configured workspace root."""
     return list_assets_tool(path=path, recursive=recursive, extensions=extensions)
+
+
+@mcp.tool()
+def read_image_file(
+    path: str,
+    include_base64: bool = True,
+    include_data_uri: bool = True,
+    max_bytes: int = 2_000_000,
+) -> dict:
+    """Read an image file inside the workspace as base64/data URI for visual inspection."""
+    return read_image_file_tool(
+        path=path,
+        include_base64=include_base64,
+        include_data_uri=include_data_uri,
+        max_bytes=max_bytes,
+    )
 
 
 @mcp.tool()

@@ -47,11 +47,13 @@ DOCX, XLSX, PPTX 생성은 로컬 MCP 클라이언트와 ChatGPT UI 기준으로
 ## 3단계 이미지 도구
 
 - `list_assets`
+- `read_image_file`
 - `save_base64_image`
 - `insert_image_to_markdown`
 - `insert_image_to_pptx`
 
 `list_assets`는 workspace assets 폴더의 이미지 파일을 조회한다.
+`read_image_file`은 이미지 파일을 base64 또는 data URI로 읽어 시각 검수에 활용할 수 있게 한다.
 `save_base64_image`는 base64 이미지 데이터를 workspace 내부 이미지 파일로 저장한다.
 `insert_image_to_markdown`은 Markdown 파일에 이미지 링크를 append 또는 prepend 방식으로 삽입한다.
 `insert_image_to_pptx`는 기존 PPTX의 지정 슬라이드에 이미지를 삽입한다.
@@ -129,7 +131,7 @@ uv run pytest
 현재 확인 결과:
 
 ```text
-39 passed
+42 passed
 ```
 
 테스트 범위:
@@ -149,6 +151,7 @@ uv run pytest
 - 기존 XLSX 셀 텍스트 추출 및 검색
 - 슬라이드 spec 기반 PPTX 생성
 - PPTX 기본 스타일 프로필 적용
+- 이미지 파일 base64/data URI 읽기
 - base64 이미지 저장
 - assets 이미지 목록 조회
 - Markdown 이미지 링크 삽입
@@ -179,7 +182,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - 파일 목록, 읽기, 쓰기, 패치
 - Markdown 생성
 - DOCX 생성 및 텍스트 추출, XLSX 생성 및 셀 검색, PPTX 생성
-- 이미지 저장 및 삽입
+- 이미지 읽기, 저장 및 삽입
 - 템플릿 목록, Markdown 템플릿, DOCX 템플릿, PPTX 템플릿 생성
 
 ## HTTPS 터널

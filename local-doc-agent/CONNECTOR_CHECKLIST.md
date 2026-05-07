@@ -11,8 +11,8 @@
 - 로컬 MCP 엔드포인트: `http://127.0.0.1:2091/mcp`
 - MCP 클라이언트 기준 도구 목록 조회 성공
 - `ping` 호출 성공
-- 로컬 pytest 기준 통과: 39개 테스트
-- 배치 스모크 검증 스크립트 기준 주요 도구 19개 일괄 호출 성공
+- 로컬 pytest 기준 통과: 42개 테스트
+- 배치 스모크 검증 스크립트 기준 주요 도구 20개 일괄 호출 성공
 
 ## 현재 ChatGPT UI 검증 상태
 
@@ -57,6 +57,7 @@
 - `extract_xlsx_text`
 - `create_pptx_from_spec`
 - `list_assets`
+- `read_image_file`
 - `save_base64_image`
 - `insert_image_to_markdown`
 - `insert_image_to_pptx`
@@ -116,13 +117,14 @@ https://example.ngrok-free.app/mcp
 16. `create_pptx_from_spec`로 PPTX 파일 생성
 17. `save_base64_image`로 이미지 저장
 18. `list_assets`로 이미지 목록 조회
-19. `insert_image_to_markdown`으로 Markdown 이미지 링크 삽입
-20. `insert_image_to_pptx`로 PPTX 이미지 삽입
-21. `list_templates`로 템플릿 목록 조회
-22. `create_markdown_from_template`으로 템플릿 기반 Markdown 생성
-23. `create_docx_from_template`으로 템플릿 기반 DOCX 생성
-24. `create_pptx_from_template`으로 템플릿 기반 PPTX 생성
-25. 권한 확인 모달, 호출 제한, 오류 메시지 기록: 진행 중
+19. `read_image_file`로 이미지 base64/data URI 읽기
+20. `insert_image_to_markdown`으로 Markdown 이미지 링크 삽입
+21. `insert_image_to_pptx`로 PPTX 이미지 삽입
+22. `list_templates`로 템플릿 목록 조회
+23. `create_markdown_from_template`으로 템플릿 기반 Markdown 생성
+24. `create_docx_from_template`으로 템플릿 기반 DOCX 생성
+25. `create_pptx_from_template`으로 템플릿 기반 PPTX 생성
+26. 권한 확인 모달, 호출 제한, 오류 메시지 기록: 진행 중
 
 ## 배치 스모크 검증
 
@@ -155,6 +157,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - `extract_xlsx_text`
 - `create_pptx_from_spec`
 - `save_base64_image`
+- `read_image_file`
 - `list_assets`
 - `insert_image_to_markdown`
 - `insert_image_to_pptx`
@@ -181,6 +184,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - PPTX 출력에 기본 스타일 프로필 적용 가능
 - `save_base64_image` 호출로 이미지 저장 가능
 - `list_assets` 호출로 이미지 목록 조회 가능
+- `read_image_file` 호출로 이미지 base64/data URI 조회 가능
 - `insert_image_to_markdown` 호출로 Markdown 이미지 링크 삽입 가능
 - `insert_image_to_pptx` 호출로 PPTX 이미지 삽입 가능
 - `list_templates` 호출로 템플릿 목록 조회 가능
@@ -203,19 +207,19 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - `create_markdown`
 - `export_docx_from_markdown`
 - `create_xlsx_from_sheets`
-- 로컬 MCP 클라이언트 배치 스모크 검증: 19개 도구 통과
+- 로컬 MCP 클라이언트 배치 스모크 검증: 20개 도구 통과
 
 다음 확인 항목:
 
 - ChatGPT UI Thinking 모드 기준 남은 도구 최종 확인
 - GPT Pro 모델 MCP 미노출 제약 기록 유지
 - `create_pptx_from_spec`
-- 이미지 도구 4종
+- 이미지 도구 5종
 - 템플릿 도구 4종
 
 ## 커밋 전 상태
 
-- 로컬 테스트 통과: 39개
+- 로컬 테스트 통과: 42개
 - 민감값 저장소 포함 여부 확인: 포함 없음
 - 런타임 산출물은 `.gitignore`로 제외
 - `uv.lock` 생성됨
@@ -272,6 +276,12 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 
 ```text
 로컬 문서 MCP의 list_assets를 호출해서 assets 이미지 목록을 보여줘. 그 다음 insert_image_to_markdown을 호출해서 docs/structured-test.md 하단에 assets/sample-pixel.png 이미지를 "Sample pixel" alt 텍스트로 삽입해줘.
+```
+
+## 이미지 읽기 검증 요청 예시
+
+```text
+로컬 문서 MCP의 read_image_file을 호출해서 assets/sample-pixel.png 파일을 data URI로 읽어줘. include_base64는 false, include_data_uri는 true로 해줘.
 ```
 
 ## PPTX 이미지 삽입 검증 요청 예시

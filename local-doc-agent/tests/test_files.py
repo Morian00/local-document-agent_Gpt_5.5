@@ -451,6 +451,56 @@ def test_save_base64_image_and_list_assets(monkeypatch, tmp_path):
     assert (settings.workspace_root / "assets" / "pixel.png").exists()
 
 
+def test_read_image_file(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    tools.save_base64_image_tool(
+        output_path="assets/pixel.png",
+        image_base64=TINY_PNG_BASE64,
+    )
+
+    read = tools.read_image_file_tool(
+        path="assets/pixel.png",
+        include_base64=True,
+        include_data_uri=True,
+    )
+
+    assert read["ok"] is True
+    assert read["path"] == "assets/pixel.png"
+    assert read["mime_type"] == "image/png"
+    assert read["width"] == 1
+    assert read["height"] == 1
+    assert read["byte_count"] > 0
+    assert read["image_base64"] == TINY_PNG_BASE64
+    assert read["data_uri"].startswith("data:image/png;base64,")
+
+
+def test_read_image_file_respects_max_bytes(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    tools.save_base64_image_tool(
+        output_path="assets/pixel.png",
+        image_base64=TINY_PNG_BASE64,
+    )
+
+    read = tools.read_image_file_tool(
+        path="assets/pixel.png",
+        max_bytes=1,
+    )
+
+    assert read["ok"] is False
+    assert "max_bytes" in read["error"]
+
+
+def test_read_image_file_rejects_bad_extension(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    read = tools.read_image_file_tool(path="docs/source.md")
+
+    assert read["ok"] is False
+    assert ".png" in read["error"]
+
+
 def test_insert_image_to_markdown(monkeypatch, tmp_path):
     tools, settings = _reload_modules(monkeypatch, tmp_path)
 

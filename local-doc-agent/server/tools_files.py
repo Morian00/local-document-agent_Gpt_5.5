@@ -15,6 +15,7 @@ from .tools_assets import (
     insert_image_to_markdown_tool,
     insert_image_to_pptx_tool,
     list_assets_tool,
+    read_image_file_tool,
     save_base64_image_tool,
 )
 

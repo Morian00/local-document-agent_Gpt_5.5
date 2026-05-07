@@ -14,6 +14,12 @@ from .logging_utils import write_operation_log
 
 
 IMAGE_EXTENSIONS = {".png", ".jpg", ".jpeg", ".webp"}
+IMAGE_MIME_TYPES = {
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".webp": "image/webp",
+}
 
 
 def _to_workspace_relative(path: Path) -> str:
@@ -90,6 +96,98 @@ def _decode_base64_image(value: str) -> bytes:
         return base64.b64decode(raw, validate=True)
     except binascii.Error as exc:
         raise ValueError("image_base64 값이 올바른 base64 형식이 아님") from exc
+
+
+def _png_size(data: bytes) -> tuple[int, int] | None:
+    if len(data) < 24 or data[:8] != b"\x89PNG\r\n\x1a\n":
+        return None
+    return int.from_bytes(data[16:20], "big"), int.from_bytes(data[20:24], "big")
+
+
+def _jpeg_size(data: bytes) -> tuple[int, int] | None:
+    if len(data) < 4 or data[:2] != b"\xff\xd8":
+        return None
+
+    index = 2
+    while index + 9 < len(data):
+        if data[index] != 0xFF:
+            index += 1
+            continue
+        marker = data[index + 1]
+        index += 2
+        if marker in {0xD8, 0xD9}:
+            continue
+        if index + 2 > len(data):
+            return None
+        length = int.from_bytes(data[index : index + 2], "big")
+        if length < 2 or index + length > len(data):
+            return None
+        if 0xC0 <= marker <= 0xCF and marker not in {0xC4, 0xC8, 0xCC}:
+            height = int.from_bytes(data[index + 3 : index + 5], "big")
+            width = int.from_bytes(data[index + 5 : index + 7], "big")
+            return width, height
+        index += length
+    return None
+
+
+def _webp_size(data: bytes) -> tuple[int, int] | None:
+    if len(data) < 30 or data[:4] != b"RIFF" or data[8:12] != b"WEBP":
+        return None
+    chunk = data[12:16]
+    if chunk == b"VP8X" and len(data) >= 30:
+        width = int.from_bytes(data[24:27], "little") + 1
+        height = int.from_bytes(data[27:30], "little") + 1
+        return width, height
+    return None
+
+
+def _image_size(data: bytes, suffix: str) -> tuple[int, int] | None:
+    if suffix == ".png":
+        return _png_size(data)
+    if suffix in {".jpg", ".jpeg"}:
+        return _jpeg_size(data)
+    if suffix == ".webp":
+        return _webp_size(data)
+    return None
+
+
+def _read_image_result(
+    path: str,
+    include_base64: bool = True,
+    include_data_uri: bool = True,
+    max_bytes: int = 2_000_000,
+) -> dict[str, Any]:
+    image = _resolve_workspace_path(path)
+    _ensure_extension(image, IMAGE_EXTENSIONS, "이미지 읽기 파일")
+
+    if not image.exists():
+        raise FileNotFoundError(f"파일을 찾을 수 없음: {path}")
+    if not image.is_file():
+        raise ValueError(f"파일이 아님: {path}")
+
+    data = image.read_bytes()
+    byte_count = len(data)
+    if byte_count > max_bytes:
+        raise ValueError(f"이미지 파일 크기가 max_bytes를 초과함: {byte_count} > {max_bytes}")
+
+    suffix = image.suffix.lower()
+    mime_type = IMAGE_MIME_TYPES[suffix]
+    encoded = base64.b64encode(data).decode("ascii") if include_base64 or include_data_uri else None
+    size = _image_size(data, suffix)
+
+    result: dict[str, Any] = {
+        "ok": True,
+        "path": _to_workspace_relative(image),
+        "mime_type": mime_type,
+        "byte_count": byte_count,
+        "width": size[0] if size else None,
+        "height": size[1] if size else None,
+    }
+    if include_base64:
+        result["image_base64"] = encoded
+    if include_data_uri:
+        result["data_uri"] = f"data:{mime_type};base64,{encoded}"
+    return result
 
 
 def _write_base64_image_result(
@@ -277,6 +375,23 @@ def save_base64_image_tool(
         )
 
     return _safe_result("save_base64_image", action)
+
+
+def read_image_file_tool(
+    path: str,
+    include_base64: bool = True,
+    include_data_uri: bool = True,
+    max_bytes: int = 2_000_000,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        return _read_image_result(
+            path=path,
+            include_base64=include_base64,
+            include_data_uri=include_data_uri,
+            max_bytes=max_bytes,
+        )
+
+    return _safe_result("read_image_file", action)
 
 
 def insert_image_to_markdown_tool(
