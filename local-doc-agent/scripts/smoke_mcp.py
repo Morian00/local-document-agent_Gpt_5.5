@@ -70,6 +70,14 @@ def _core_calls() -> list[SmokeCall]:
             },
         ),
         SmokeCall(
+            "extract_docx_text",
+            {
+                "source_path": "output/smoke-structured.docx",
+                "max_chars": 2000,
+                "include_paragraphs": True,
+            },
+        ),
+        SmokeCall(
             "create_xlsx_from_sheets",
             {
                 "output_path": "output/smoke-checklist.xlsx",

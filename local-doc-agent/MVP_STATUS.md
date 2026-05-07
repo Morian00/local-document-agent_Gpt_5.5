@@ -16,6 +16,7 @@
 - Markdown 구조화 문서 생성
 - Markdown 기반 DOCX 생성
 - DOCX 기본 스타일 프로필 적용
+- 기존 DOCX 텍스트 추출
 - 시트 목록 기반 XLSX 생성
 - 슬라이드 spec 기반 PPTX 생성
 - PPTX 기본 스타일 프로필 적용
@@ -42,6 +43,7 @@
 - `create_docx_from_template`
 - `create_pptx_from_template`
 - `export_docx_from_markdown`
+- `extract_docx_text`
 - `create_xlsx_from_sheets`
 - `create_pptx_from_spec`
 - `save_base64_image`
@@ -51,9 +53,9 @@
 
 ## 검증 상태
 
-- 로컬 테스트: `uv run pytest` 기준 29개 통과
+- 로컬 테스트: `uv run pytest` 기준 32개 통과
 - 로컬 MCP 클라이언트 기준 전체 도구 노출 확인
-- 로컬 MCP 클라이언트 배치 스모크 검증: 17개 도구 통과
+- 로컬 MCP 클라이언트 배치 스모크 검증: 18개 도구 통과
 - ngrok HTTPS 경유 MCP 호출 확인
 - ChatGPT UI 기준 0~1단계 및 DOCX 변환 호출 확인
 - 로컬 MCP 클라이언트 기준 템플릿 도구 호출 확인
@@ -65,6 +67,7 @@
 ## 남은 확인
 
 - ChatGPT UI 기준 `create_pptx_from_spec` 최종 호출 확인
+- ChatGPT UI 기준 `extract_docx_text` 최종 호출 확인
 - ChatGPT UI 기준 이미지 도구 4종 최종 호출 확인
 - ChatGPT UI 기준 템플릿 도구 4종 최종 호출 확인
 - 쓰기 도구 반복 호출 시 권한 확인 모달 발생 패턴 기록
@@ -72,6 +75,5 @@
 ## MVP 이후 후보
 
 - XLSX 서식 옵션 확대
-- 기존 DOCX 텍스트 추출
 - 기존 DOCX to Markdown 변환
 - 도구 모듈 추가 분리

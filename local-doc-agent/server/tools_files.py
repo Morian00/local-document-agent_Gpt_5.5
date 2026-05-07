@@ -225,6 +225,49 @@ def _write_docx_from_markdown_result(
     }
 
 
+def _extract_docx_text_result(
+    source_path: str,
+    max_chars: int | None = None,
+    include_paragraphs: bool = True,
+) -> dict[str, Any]:
+    from docx import Document
+
+    source = _resolve_workspace_path(source_path)
+    _ensure_extension(source, {".docx"}, "DOCX 텍스트 추출 입력 파일")
+
+    if not source.exists():
+        raise FileNotFoundError(f"파일을 찾을 수 없음: {source_path}")
+    if not source.is_file():
+        raise ValueError(f"파일이 아님: {source_path}")
+
+    document = Document(source)
+    paragraphs = [paragraph.text.strip() for paragraph in document.paragraphs if paragraph.text.strip()]
+
+    table_rows: list[str] = []
+    for table in document.tables:
+        for row in table.rows:
+            cells = [cell.text.strip() for cell in row.cells if cell.text.strip()]
+            if cells:
+                table_rows.append(" | ".join(cells))
+
+    blocks = paragraphs + table_rows
+    full_text = "\n\n".join(blocks)
+    limit = max_chars or settings.max_read_chars
+    truncated = len(full_text) > limit
+
+    return {
+        "ok": True,
+        "path": _to_workspace_relative(source),
+        "source_path": _to_workspace_relative(source),
+        "text": full_text[:limit] if truncated else full_text,
+        "paragraphs": paragraphs if include_paragraphs else [],
+        "paragraph_count": len(paragraphs),
+        "table_row_count": len(table_rows),
+        "char_count": len(full_text),
+        "truncated": truncated,
+    }
+
+
 def _normalize_sheet_name(value: Any, fallback: str) -> str:
     raw = str(value or fallback).strip() or fallback
     for char in ("\\", "/", "*", "[", "]", ":", "?"):
@@ -571,6 +614,21 @@ def export_docx_from_markdown_tool(
         )
 
     return _safe_result("export_docx_from_markdown", action)
+
+
+def extract_docx_text_tool(
+    source_path: str,
+    max_chars: int | None = None,
+    include_paragraphs: bool = True,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        return _extract_docx_text_result(
+            source_path=source_path,
+            max_chars=max_chars,
+            include_paragraphs=include_paragraphs,
+        )
+
+    return _safe_result("extract_docx_text", action)
 
 
 def create_xlsx_from_sheets_tool(

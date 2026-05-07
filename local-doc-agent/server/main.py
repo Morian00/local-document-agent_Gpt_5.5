@@ -12,6 +12,7 @@ if __package__ in {None, ""}:
         create_markdown_tool,
         create_pptx_from_spec_tool,
         create_xlsx_from_sheets_tool,
+        extract_docx_text_tool,
         export_docx_from_markdown_tool,
         insert_image_to_markdown_tool,
         insert_image_to_pptx_tool,
@@ -35,6 +36,7 @@ else:
         create_markdown_tool,
         create_pptx_from_spec_tool,
         create_xlsx_from_sheets_tool,
+        extract_docx_text_tool,
         export_docx_from_markdown_tool,
         insert_image_to_markdown_tool,
         insert_image_to_pptx_tool,
@@ -217,6 +219,20 @@ def export_docx_from_markdown(
         output_path=output_path,
         overwrite=overwrite,
         create_backup=create_backup,
+    )
+
+
+@mcp.tool()
+def extract_docx_text(
+    source_path: str,
+    max_chars: int | None = None,
+    include_paragraphs: bool = True,
+) -> dict:
+    """Extract text from a DOCX file inside the workspace."""
+    return extract_docx_text_tool(
+        source_path=source_path,
+        max_chars=max_chars,
+        include_paragraphs=include_paragraphs,
     )
 
 

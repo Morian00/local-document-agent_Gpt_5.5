@@ -143,6 +143,64 @@ def test_export_docx_rejects_non_markdown_source(monkeypatch, tmp_path):
     assert "입력 파일" in result["error"]
 
 
+def test_extract_docx_text(monkeypatch, tmp_path):
+    tools, settings = _reload_modules(monkeypatch, tmp_path)
+
+    document = Document()
+    document.add_heading("전투 시스템 개선안", level=1)
+    document.add_paragraph("전투 루프와 성장 구조를 정리한다.")
+    table = document.add_table(rows=2, cols=2)
+    table.cell(0, 0).text = "항목"
+    table.cell(0, 1).text = "상태"
+    table.cell(1, 0).text = "DOCX 추출"
+    table.cell(1, 1).text = "완료"
+    target = settings.workspace_root / "docs" / "source.docx"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    document.save(target)
+
+    extracted = tools.extract_docx_text_tool(source_path="docs/source.docx")
+
+    assert extracted["ok"] is True
+    assert extracted["path"] == "docs/source.docx"
+    assert extracted["source_path"] == "docs/source.docx"
+    assert extracted["paragraph_count"] == 2
+    assert extracted["table_row_count"] == 2
+    assert extracted["truncated"] is False
+    assert "전투 시스템 개선안" in extracted["text"]
+    assert "DOCX 추출 | 완료" in extracted["text"]
+    assert extracted["paragraphs"] == ["전투 시스템 개선안", "전투 루프와 성장 구조를 정리한다."]
+
+
+def test_extract_docx_text_truncates(monkeypatch, tmp_path):
+    tools, settings = _reload_modules(monkeypatch, tmp_path)
+
+    document = Document()
+    document.add_paragraph("1234567890")
+    target = settings.workspace_root / "docs" / "long.docx"
+    target.parent.mkdir(parents=True, exist_ok=True)
+    document.save(target)
+
+    extracted = tools.extract_docx_text_tool(
+        source_path="docs/long.docx",
+        max_chars=4,
+        include_paragraphs=False,
+    )
+
+    assert extracted["ok"] is True
+    assert extracted["text"] == "1234"
+    assert extracted["truncated"] is True
+    assert extracted["paragraphs"] == []
+
+
+def test_extract_docx_text_rejects_bad_extension(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    result = tools.extract_docx_text_tool(source_path="docs/source.md")
+
+    assert result["ok"] is False
+    assert ".docx" in result["error"]
+
+
 def test_create_xlsx_from_sheets(monkeypatch, tmp_path):
     tools, settings = _reload_modules(monkeypatch, tmp_path)
 
