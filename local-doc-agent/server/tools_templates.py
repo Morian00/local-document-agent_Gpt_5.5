@@ -182,6 +182,141 @@ def _add_markdown_to_docx(document: Any, markdown: str) -> dict[str, int]:
     return {"heading_count": heading_count, "paragraph_count": paragraph_count}
 
 
+def _section_body_to_slide_parts(body: str) -> tuple[str, list[str]]:
+    lines = [line.strip() for line in body.splitlines() if line.strip()]
+    bullets: list[str] = []
+    body_lines: list[str] = []
+
+    for line in lines:
+        if line.startswith("- [ ] "):
+            bullets.append(line[6:].strip())
+        elif line.startswith("- "):
+            bullets.append(line[2:].strip())
+        elif re.match(r"^\d+\.\s+", line):
+            bullets.append(re.sub(r"^\d+\.\s+", "", line).strip())
+        else:
+            body_lines.append(line)
+
+    return "\n".join(body_lines), bullets
+
+
+def _build_template_slides(
+    template: dict[str, Any],
+    title: str,
+    summary: str,
+    variables: dict[str, Any],
+) -> tuple[str, list[dict[str, Any]]]:
+    merged_variables = {"title": title, "summary": summary, **variables}
+    rendered_title = _render_template_text(str(template["title"]), merged_variables).strip()
+    if not rendered_title:
+        raise ValueError("title 값은 비어 있을 수 없음")
+
+    slides: list[dict[str, Any]] = []
+    for heading, body in template["sections"]:
+        rendered_heading = _render_template_text(heading, merged_variables).strip()
+        rendered_body = _render_template_text(body, merged_variables).strip()
+        if not rendered_heading and not rendered_body:
+            continue
+
+        body_text, bullets = _section_body_to_slide_parts(rendered_body)
+        slides.append(
+            {
+                "title": rendered_heading or rendered_title,
+                "body": body_text,
+                "bullets": bullets,
+            }
+        )
+
+    return rendered_title, slides
+
+
+def _write_template_pptx_result(
+    template: dict[str, Any],
+    template_name: str,
+    output_path: str,
+    title: str,
+    summary: str,
+    variables: dict[str, Any],
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    from pptx import Presentation
+    from pptx.util import Pt
+
+    rendered_title, slides = _build_template_slides(
+        template=template,
+        title=title,
+        summary=summary,
+        variables=variables,
+    )
+    if not slides:
+        raise ValueError("템플릿에 생성 가능한 슬라이드가 없음")
+
+    target = _resolve_workspace_path(output_path)
+    if target.suffix.lower() != ".pptx":
+        raise ValueError("템플릿 PPTX 출력 파일은 .pptx 확장자만 지원함")
+
+    should_overwrite = settings.default_overwrite if overwrite is None else overwrite
+    should_backup = settings.create_backup if create_backup is None else create_backup
+
+    exists = target.exists()
+    if exists and not should_overwrite:
+        raise FileExistsError(f"파일이 이미 존재함: {output_path}")
+    if exists and not target.is_file():
+        raise ValueError(f"파일이 아님: {output_path}")
+
+    presentation = Presentation()
+    title_slide = presentation.slides.add_slide(presentation.slide_layouts[0])
+    title_slide.shapes.title.text = rendered_title
+    try:
+        title_slide.placeholders[1].text = summary.strip()
+    except IndexError:
+        pass
+
+    bullet_count = 0
+    body_count = 0
+
+    for slide_spec in slides:
+        slide = presentation.slides.add_slide(presentation.slide_layouts[1])
+        if slide.shapes.title:
+            slide.shapes.title.text = slide_spec["title"]
+
+        content = slide.placeholders[1].text_frame
+        content.clear()
+
+        body = slide_spec["body"]
+        bullets = slide_spec["bullets"]
+        if body:
+            paragraph = content.paragraphs[0]
+            paragraph.text = body
+            paragraph.font.size = Pt(22)
+            body_count += 1
+
+        for index, bullet in enumerate(bullets):
+            paragraph = content.paragraphs[0] if index == 0 and not body else content.add_paragraph()
+            paragraph.text = bullet
+            paragraph.level = 0
+            paragraph.font.size = Pt(22)
+            bullet_count += 1
+
+    backup_path = _backup_existing_file(target) if exists and should_backup else None
+    target.parent.mkdir(parents=True, exist_ok=True)
+    presentation.save(target)
+
+    return {
+        "ok": True,
+        "path": _to_workspace_relative(target),
+        "output_path": _to_workspace_relative(target),
+        "created": not exists,
+        "backup_path": backup_path,
+        "template_name": template_name,
+        "section_count": len(template["sections"]),
+        "slide_count": len(presentation.slides),
+        "bullet_count": bullet_count,
+        "body_count": body_count,
+    }
+
+
 def list_templates_tool() -> dict[str, Any]:
     def action() -> dict[str, Any]:
         templates = [
@@ -305,3 +440,32 @@ def create_docx_from_template_tool(
         }
 
     return _safe_result("create_docx_from_template", action)
+
+
+def create_pptx_from_template_tool(
+    template_name: str,
+    output_path: str,
+    title: str,
+    summary: str = "",
+    variables: dict[str, Any] | None = None,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict[str, Any]:
+    def action() -> dict[str, Any]:
+        template = TEMPLATES.get(template_name)
+        if template is None:
+            allowed = ", ".join(sorted(TEMPLATES))
+            raise ValueError(f"알 수 없는 template_name: {template_name}. 사용 가능: {allowed}")
+
+        return _write_template_pptx_result(
+            template=template,
+            template_name=template_name,
+            output_path=output_path,
+            title=title,
+            summary=summary,
+            variables=variables or {},
+            overwrite=overwrite,
+            create_backup=create_backup,
+        )
+
+    return _safe_result("create_pptx_from_template", action)

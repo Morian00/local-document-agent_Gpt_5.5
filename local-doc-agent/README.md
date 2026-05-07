@@ -57,10 +57,12 @@ DOCX, XLSX, PPTX 생성은 로컬 MCP 클라이언트와 ChatGPT UI 기준으로
 - `list_templates`
 - `create_markdown_from_template`
 - `create_docx_from_template`
+- `create_pptx_from_template`
 
 `list_templates`는 내장 템플릿 목록을 조회한다.
 `create_markdown_from_template`은 템플릿 이름, 제목, 요약, 변수 값을 받아 Markdown 문서 초안을 생성한다.
 `create_docx_from_template`은 내장 템플릿을 기반으로 DOCX 문서 초안을 생성한다.
+`create_pptx_from_template`은 내장 템플릿을 기반으로 PPTX 발표자료 초안을 생성한다.
 
 현재 내장 템플릿:
 
@@ -106,7 +108,7 @@ uv run pytest
 현재 확인 결과:
 
 ```text
-26 passed
+29 passed
 ```
 
 테스트 범위:
@@ -128,6 +130,7 @@ uv run pytest
 - 템플릿 목록 조회
 - 템플릿 기반 Markdown 생성
 - 템플릿 기반 DOCX 생성
+- 템플릿 기반 PPTX 생성
 
 ## 배치 스모크 검증
 
@@ -151,7 +154,7 @@ uv run python scripts/smoke_mcp.py --url https://example.ngrok-free.app/mcp
 - Markdown 생성
 - DOCX, XLSX, PPTX 생성
 - 이미지 저장 및 삽입
-- 템플릿 목록, Markdown 템플릿, DOCX 템플릿 생성
+- 템플릿 목록, Markdown 템플릿, DOCX 템플릿, PPTX 템플릿 생성
 
 ## HTTPS 터널
 
@@ -171,9 +174,9 @@ https://example.ngrok-free.app/mcp
 
 1. 배치 스모크 검증 스크립트 유지
 2. ChatGPT UI 모드별 MCP 도구 노출 제약 기록
-3. 템플릿 기반 PPTX 생성 검토
-4. DOCX 스타일 고도화 검토
-5. PPTX 레이아웃 품질 고도화 검토
+3. DOCX 스타일 고도화 검토
+4. PPTX 레이아웃 품질 고도화 검토
+5. 기존 문서 읽기·추출 도구 검토
 
 쓰기 도구가 제한될 경우, 1차 대응은 읽기 전용 검증 모드로 전환한다.
 

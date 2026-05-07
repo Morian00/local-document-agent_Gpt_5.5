@@ -163,6 +163,17 @@ def _core_calls() -> list[SmokeCall]:
                 "create_backup": True,
             },
         ),
+        SmokeCall(
+            "create_pptx_from_template",
+            {
+                "template_name": "planning_doc",
+                "output_path": "output/smoke-template.pptx",
+                "title": "배치 템플릿 발표자료",
+                "summary": "템플릿 기반 PPTX 생성 검증.",
+                "overwrite": True,
+                "create_backup": True,
+            },
+        ),
     ]
 
 

@@ -26,6 +26,7 @@ if __package__ in {None, ""}:
     from server.tools_templates import (
         create_docx_from_template_tool,
         create_markdown_from_template_tool,
+        create_pptx_from_template_tool,
         list_templates_tool,
     )
 else:
@@ -48,6 +49,7 @@ else:
     from .tools_templates import (
         create_docx_from_template_tool,
         create_markdown_from_template_tool,
+        create_pptx_from_template_tool,
         list_templates_tool,
     )
 
@@ -170,6 +172,28 @@ def create_docx_from_template(
 ) -> dict:
     """Create a DOCX document from a built-in template."""
     return create_docx_from_template_tool(
+        template_name=template_name,
+        output_path=output_path,
+        title=title,
+        summary=summary,
+        variables=variables,
+        overwrite=overwrite,
+        create_backup=create_backup,
+    )
+
+
+@mcp.tool()
+def create_pptx_from_template(
+    template_name: str,
+    output_path: str,
+    title: str,
+    summary: str = "",
+    variables: dict | None = None,
+    overwrite: bool | None = None,
+    create_backup: bool | None = None,
+) -> dict:
+    """Create a PPTX document from a built-in template."""
+    return create_pptx_from_template_tool(
         template_name=template_name,
         output_path=output_path,
         title=title,

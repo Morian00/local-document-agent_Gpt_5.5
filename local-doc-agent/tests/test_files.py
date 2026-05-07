@@ -29,6 +29,7 @@ def _reload_modules(monkeypatch, tmp_path):
     tools_files.list_templates_tool = tools_templates.list_templates_tool
     tools_files.create_markdown_from_template_tool = tools_templates.create_markdown_from_template_tool
     tools_files.create_docx_from_template_tool = tools_templates.create_docx_from_template_tool
+    tools_files.create_pptx_from_template_tool = tools_templates.create_pptx_from_template_tool
     return tools_files, config.settings
 
 
@@ -481,3 +482,66 @@ def test_create_docx_from_template_rejects_bad_extension(monkeypatch, tmp_path):
 
     assert result["ok"] is False
     assert ".docx" in result["error"]
+
+
+def test_create_pptx_from_template(monkeypatch, tmp_path):
+    tools, settings = _reload_modules(monkeypatch, tmp_path)
+
+    created = tools.create_pptx_from_template_tool(
+        template_name="planning_doc",
+        output_path="output/planning.pptx",
+        title="전투 시스템 개선안",
+        summary="전투 루프와 성장 구조를 정리한다.",
+    )
+
+    assert created["ok"] is True
+    assert created["path"] == "output/planning.pptx"
+    assert created["output_path"] == "output/planning.pptx"
+    assert created["template_name"] == "planning_doc"
+    assert created["slide_count"] == 7
+    assert created["bullet_count"] > 0
+    assert created["body_count"] > 0
+
+    presentation = Presentation(settings.workspace_root / "output" / "planning.pptx")
+    slide_texts = []
+    for slide in presentation.slides:
+        for shape in slide.shapes:
+            if hasattr(shape, "text") and shape.text:
+                slide_texts.append(shape.text)
+
+    assert any("전투 시스템 개선안" in text for text in slide_texts)
+    assert any("개요" in text for text in slide_texts)
+    assert any("핵심 루프" in text for text in slide_texts)
+
+
+def test_create_pptx_from_template_creates_backup(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    first = tools.create_pptx_from_template_tool(
+        template_name="proposal_doc",
+        output_path="output/template.pptx",
+        title="첫 발표자료",
+    )
+    second = tools.create_pptx_from_template_tool(
+        template_name="proposal_doc",
+        output_path="output/template.pptx",
+        title="두 번째 발표자료",
+    )
+
+    assert first["ok"] is True
+    assert second["ok"] is True
+    assert second["created"] is False
+    assert second["backup_path"] is not None
+
+
+def test_create_pptx_from_template_rejects_bad_extension(monkeypatch, tmp_path):
+    tools, _settings = _reload_modules(monkeypatch, tmp_path)
+
+    result = tools.create_pptx_from_template_tool(
+        template_name="planning_doc",
+        output_path="output/template.docx",
+        title="잘못된 확장자",
+    )
+
+    assert result["ok"] is False
+    assert ".pptx" in result["error"]
